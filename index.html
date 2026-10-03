@@ -290,6 +290,8 @@ body.hc { font-size:1.06rem; }
 .live-dot { position: relative; display: inline-flex; width: 8px; height: 8px; }
 .live-dot span:first-child { position: absolute; inset: 0; border-radius: 50%; background: #10b981; animation: pulseRing 1.8s ease-out infinite; }
 .live-dot span:last-child { position: relative; border-radius: 50%; background: #10b981; width: 8px; height: 8px; }
+.live-dot.offline span:first-child { background: #ef4444; animation: none; }
+.live-dot.offline span:last-child { background: #ef4444; }
 
 .inp { width: 100%; padding: 0.7rem 0.9rem; border-radius: 0.85rem; border: 1.5px solid #e2e8f0; background: #fff; color: #1e293b; font-size: 0.95rem; font-weight: 500; transition: all .22s; }
 .dark .inp { background: #0f172a; color: #e2e8f0; border-color: #334155; }
@@ -309,10 +311,6 @@ body.hc { font-size:1.06rem; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
-/* ================================================================
-   OCR SCANNER PREMIUM STYLES
-================================================================ */
-.quality-bar { padding: 0; }
 .quality-bar .q-fill { transition: width .15s ease-out; }
 .scan-flash { position: absolute; inset: 0; background: #22c55e; opacity: 0; pointer-events: none; }
 .scan-flash.active { animation: flashGreen .6s ease-out; }
@@ -341,6 +339,68 @@ body.hc { font-size:1.06rem; }
 .warning-pill.warn { background: rgba(245, 158, 11, 0.95); color: #fff; }
 .warning-pill.error { background: rgba(239, 68, 68, 0.95); color: #fff; }
 
+/* ================================================================
+   CONFIG ERROR BANNER
+================================================================ */
+#configError {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  max-width: 560px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: #fff;
+  padding: 16px 20px;
+  border-radius: 18px;
+  box-shadow: 0 20px 40px -12px rgba(220, 38, 38, 0.5);
+  z-index: 500;
+  animation: floatIn .4s ease-out;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+#configError i { font-size: 22px; margin-top: 2px; flex-shrink: 0; }
+#configError .title { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
+#configError .desc { font-size: 12px; line-height: 1.55; opacity: 0.95; }
+#configError code { background: rgba(0,0,0,.3); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-family: ui-monospace, monospace; }
+#configError button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+}
+#configError button:hover { background: rgba(255,255,255,.25); }
+
+/* Loading overlay for full-page fetch */
+#loadingOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(6px);
+  z-index: 400;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+#loadingOverlay.show { display: flex; }
+#loadingOverlay .spinner {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 5px solid rgba(255,255,255,0.25);
+  border-top-color: #14b8a6;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 @media print { .no-print { display: none !important; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -354,6 +414,30 @@ body.hc { font-size:1.06rem; }
 
 <div id="offlineBar" class="offline-bar"><i class="fa-solid fa-wifi mr-1"></i> คุณออฟไลน์อยู่ — ข้อมูลจะซิงค์อัตโนมัติเมื่อเชื่อมต่อ</div>
 <div aria-live="polite" aria-atomic="true" class="sr-only" id="srAnnouncer"></div>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay">
+  <div class="text-center text-white">
+    <div class="spinner mx-auto mb-4"></div>
+    <div class="font-bold text-sm" id="loadingText">กำลังโหลดข้อมูล...</div>
+  </div>
+</div>
+
+<!-- Config error banner (แสดงเมื่อยังไม่ได้ตั้งค่า API_URL) -->
+<div id="configError" class="hidden no-print">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <div class="flex-1">
+    <div class="title">ยังไม่ได้ตั้งค่า Backend API</div>
+    <div class="desc">
+      กรุณาตั้งค่า <code>API_URL</code> ในไฟล์ <code>index.html</code> ให้เป็น URL ของ Google Apps Script Web App
+      ที่ deploy แล้ว (Deploy → New deployment → Web app → Execute as: Me / Access: Anyone)
+      <br/>จากนั้นรัน <code>setupDatabase()</code> ใน Code.gs เพื่อสร้างชีต
+    </div>
+  </div>
+  <button onclick="document.getElementById('configError').classList.add('hidden')" aria-label="ปิด">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+</div>
 
 <div class="cursor-glow no-print" id="cursorGlow" style="position:fixed;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,var(--gov-glow),transparent 65%);pointer-events:none;transform:translate(-50%,-50%);mix-blend-mode:screen;z-index:1;opacity:0;transition:opacity .3s;"></div>
 
@@ -584,7 +668,7 @@ body.hc { font-size:1.06rem; }
       <h1 class="text-xl md:text-2xl font-extrabold flex items-center gap-2 bg-gradient-to-r from-gov-700 via-gov-600 to-royal-600 bg-clip-text text-transparent dark:from-gov-300 dark:via-gov-400 dark:to-royal-400"><i class="fa-solid fa-chart-line text-gov-600"></i> ศูนย์บัญชาการช่วยเหลือผู้ประสบภัย</h1>
       <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2 flex-wrap">
         <span>ยินดีต้อนรับ <b id="adminName">เจ้าหน้าที่</b></span>
-        <span class="live-dot"><span></span><span></span></span>
+        <span class="live-dot" id="liveDot"><span></span><span></span></span>
         <span>Live · <span id="lastSync">-</span></span>
         <button onclick="Inspector.toggle()" class="hidden 2xl:inline-flex items-center gap-1 text-[11px] font-bold text-gov-600 hover:underline"><i class="fa-solid fa-sidebar-flip"></i> สลับ Inspector</button>
       </p>
@@ -613,19 +697,31 @@ body.hc { font-size:1.06rem; }
       </div>
 
       <div class="glass-card rounded-2xl p-4 mt-4">
-        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-3">ประสิทธิภาพวันนี้</div>
+        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-3">ประสิทธิภาพ</div>
         <div class="flex items-center gap-3 mb-3">
           <svg class="progress-ring" width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="#e2e8f0" stroke-width="5"/><circle id="perfRing" cx="26" cy="26" r="22" fill="none" stroke="#14b8a6" stroke-width="5" stroke-dasharray="138.2" stroke-dashoffset="138.2" stroke-linecap="round"/></svg>
           <div><div class="text-lg font-extrabold" id="perfPercent">0%</div><div class="text-[10px] text-slate-500">ปิดเคสสำเร็จ</div></div>
         </div>
         <div class="flex items-center gap-2 text-[11px] text-slate-500">
-          <div class="avatar-stack"><div class="avatar">ก</div><div class="avatar">ข</div><div class="avatar">ค</div><div class="avatar">+5</div></div>
+          <div class="avatar-stack" id="avatarStack"><div class="avatar">?</div></div>
           <span>เจ้าหน้าที่ออนไลน์</span>
         </div>
       </div>
     </aside>
 
     <div class="min-w-0">
+      <!-- Skeleton (แสดงก่อนโหลดเสร็จ) -->
+      <div id="dashboardSkeleton" class="hidden">
+        <div class="grid grid-cols-4 gap-3.5 mb-5">
+          <div class="col-span-2 row-span-2 skeleton h-96"></div>
+          <div class="skeleton h-44"></div>
+          <div class="skeleton h-44"></div>
+          <div class="skeleton h-44"></div>
+          <div class="skeleton h-44"></div>
+        </div>
+        <div class="skeleton h-96"></div>
+      </div>
+
       <div class="bento mb-5 stagger" id="bentoGrid">
         <div class="bento-hero glass-card rounded-2xl p-4 md:p-5 overflow-hidden">
           <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -716,12 +812,15 @@ body.hc { font-size:1.06rem; }
           </table>
         </div>
         <div id="tableEmpty" class="hidden py-14 text-center text-slate-400">
-          <div class="empty-illustration inline-block mb-3"><lottie-player src="https://assets10.lottiefiles.com/packages/lf20_hl5n0bwn.json" background="transparent" speed="1" style="width:160px;height:160px" loop autoplay></lottie-player></div>
-          <p class="text-sm font-semibold">ไม่พบข้อมูลคำร้องตามเงื่อนไขที่เลือก</p>
+          <div class="empty-illustration inline-block mb-3">
+            <i class="fa-solid fa-inbox text-6xl text-slate-300 dark:text-slate-700 block"></i>
+          </div>
+          <p class="text-sm font-semibold" id="tableEmptyTitle">ไม่พบข้อมูลคำร้อง</p>
+          <p class="text-xs text-slate-400 mt-1" id="tableEmptySub">ลองเปลี่ยนเงื่อนไขการกรอง หรือรอให้ประชาชนยื่นคำร้องเข้ามาใหม่</p>
         </div>
         <div class="px-4 py-3 border-t border-slate-200/70 dark:border-slate-800/70 text-xs text-slate-500 dark:text-slate-400 flex justify-between flex-wrap gap-2">
           <span>แสดง <b id="rowCount">0</b> รายการ</span>
-          <span class="flex items-center gap-1.5"><span class="live-dot"><span></span><span></span></span>เชื่อมต่อ Google Sheets</span>
+          <span class="flex items-center gap-1.5"><span class="live-dot" id="tableLiveDot"><span></span><span></span></span>เชื่อมต่อ Google Sheets</span>
         </div>
       </div>
     </div>
@@ -750,7 +849,6 @@ body.hc { font-size:1.06rem; }
      MODAL : AI CAMERA (ENTERPRISE OCR SCANNER)
 ================================================================ -->
 <div id="cameraModal" class="hidden fixed inset-0 z-[90] bg-black flex flex-col no-print">
-  <!-- Top bar -->
   <div class="absolute top-0 left-0 right-0 p-3 flex items-center justify-between z-30 bg-gradient-to-b from-black/80 to-transparent">
     <div class="flex items-center gap-3">
       <button onclick="Camera.close()" class="w-10 h-10 rounded-full bg-white/10 backdrop-blur hover:bg-white/20 grid place-items-center text-white transition"><i class="fa-solid fa-xmark"></i></button>
@@ -768,11 +866,9 @@ body.hc { font-size:1.06rem; }
     </div>
   </div>
 
-  <!-- Video area -->
   <div class="relative flex-1 overflow-hidden">
     <video id="camVideo" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover"></video>
 
-    <!-- AR Overlay -->
     <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
       <div id="arFrame" class="relative w-[88%] max-w-xl aspect-[1.58/1] rounded-2xl transition-colors duration-300" style="box-shadow:0 0 0 9999px rgba(0,0,0,.6);">
         <span class="ar-corner absolute -top-0.5 -left-0.5 w-10 h-10 border-t-4 border-l-4 rounded-tl-2xl transition-colors duration-300"></span>
@@ -780,18 +876,12 @@ body.hc { font-size:1.06rem; }
         <span class="ar-corner absolute -bottom-0.5 -left-0.5 w-10 h-10 border-b-4 border-l-4 rounded-bl-2xl transition-colors duration-300"></span>
         <span class="ar-corner absolute -bottom-0.5 -right-0.5 w-10 h-10 border-b-4 border-r-4 rounded-br-2xl transition-colors duration-300"></span>
         <span id="scanLine" class="absolute left-3 right-3 h-0.5 rounded-full animate-scanline" style="background:linear-gradient(90deg,transparent,var(--ar-color),transparent);box-shadow:0 0 12px var(--ar-color);"></span>
-        <!-- Auto-capture ring -->
         <svg class="auto-capture-ring" viewBox="0 0 100 60" preserveAspectRatio="none"><circle cx="50" cy="30" r="28" id="captureRing" transform="rotate(-90 50 30)"/></svg>
       </div>
     </div>
 
-    <!-- Quality Score Badge -->
-    <div id="scoreBadge" class="score-badge bad hidden">
-      <i class="fa-solid fa-gauge-high"></i>
-      <span id="scoreValue">--</span>
-    </div>
+    <div id="scoreBadge" class="score-badge bad hidden"><i class="fa-solid fa-gauge-high"></i><span id="scoreValue">--</span></div>
 
-    <!-- Quality Panel -->
     <div id="qualityOverlay" class="absolute top-16 left-3 bg-black/80 backdrop-blur-md text-white rounded-2xl p-3 w-[210px] hidden">
       <div class="flex items-center gap-2 mb-2.5">
         <span id="qualityIcon" class="text-xl">🎯</span>
@@ -801,42 +891,18 @@ body.hc { font-size:1.06rem; }
         </div>
       </div>
       <div class="space-y-1.5 text-[10px]">
-        <div>
-          <div class="flex justify-between mb-0.5"><span>ความคมชัด</span><span class="q-val font-bold">--</span></div>
-          <div class="h-1 bg-white/15 rounded-full overflow-hidden"><div class="q-fill h-full bg-gradient-to-r from-rose-500 to-emerald-500 transition-all" style="width:0%"></div></div>
-        </div>
-        <div>
-          <div class="flex justify-between mb-0.5"><span>ความสว่าง</span><span class="q-val font-bold">--</span></div>
-          <div class="h-1 bg-white/15 rounded-full overflow-hidden"><div class="q-fill h-full bg-gradient-to-r from-rose-500 to-emerald-500 transition-all" style="width:0%"></div></div>
-        </div>
-        <div>
-          <div class="flex justify-between mb-0.5"><span>ขนาดบัตร</span><span class="q-val font-bold">--</span></div>
-          <div class="h-1 bg-white/15 rounded-full overflow-hidden"><div class="q-fill h-full bg-gradient-to-r from-rose-500 to-emerald-500 transition-all" style="width:0%"></div></div>
-        </div>
-        <div>
-          <div class="flex justify-between mb-0.5"><span>ความตรง</span><span class="q-val font-bold">--</span></div>
-          <div class="h-1 bg-white/15 rounded-full overflow-hidden"><div class="q-fill h-full bg-gradient-to-r from-rose-500 to-emerald-500 transition-all" style="width:0%"></div></div>
-        </div>
+        <div><div class="flex justify-between mb-0.5"><span>ความคมชัด</span><span class="q-val font-bold">--</span></div><div class="h-1 bg-white/15 rounded-full overflow-hidden"><div class="q-fill h-full bg-gradient-to-r from-rose-500 to-emerald-500 transition-all" style="width:0%"></div></div></div>
+        <div><div class="flex justify-between mb-0.5"><span>ความสว่าง</span><span class="q-val font-bold">--</span></div><div class="h-1 bg-white/15 rounded-full overflow-hidden"><div class="q-fill h-full bg-gradient-to-r from-rose-500 to-emerald-500 transition-all" style="width:0%"></div></div></div>
+        <div><div class="flex justify-between mb-0.5"><span>ขนาดบัตร</span><span class="q-val font-bold">--</span></div><div class="h-1 bg-white/15 rounded-full overflow-hidden"><div class="q-fill h-full bg-gradient-to-r from-rose-500 to-emerald-500 transition-all" style="width:0%"></div></div></div>
+        <div><div class="flex justify-between mb-0.5"><span>ความตรง</span><span class="q-val font-bold">--</span></div><div class="h-1 bg-white/15 rounded-full overflow-hidden"><div class="q-fill h-full bg-gradient-to-r from-rose-500 to-emerald-500 transition-all" style="width:0%"></div></div></div>
       </div>
-      <div id="qualityHint" class="mt-2 text-[10px] font-bold text-amber-300 flex items-start gap-1">
-        <i class="fa-solid fa-lightbulb mt-0.5"></i>
-        <span>จัดบัตรให้อยู่ในกรอบ</span>
-      </div>
+      <div id="qualityHint" class="mt-2 text-[10px] font-bold text-amber-300 flex items-start gap-1"><i class="fa-solid fa-lightbulb mt-0.5"></i><span>จัดบัตรให้อยู่ในกรอบ</span></div>
     </div>
 
-    <!-- Warning pill -->
-    <div id="warningPill" class="warning-pill warn hidden">
-      <i class="fa-solid fa-triangle-exclamation"></i>
-      <span id="warningText">จัดบัตรให้อยู่ในกรอบ</span>
-    </div>
-
-    <!-- Focus tap -->
+    <div id="warningPill" class="warning-pill warn hidden"><i class="fa-solid fa-triangle-exclamation"></i><span id="warningText">จัดบัตรให้อยู่ในกรอบ</span></div>
     <div id="focusTap" class="hidden"></div>
-
-    <!-- Zoom indicator -->
     <div id="zoomIndicator" class="zoom-indicator hidden">1.0×</div>
 
-    <!-- Processing overlay -->
     <div id="ocrProcessing" class="hidden absolute inset-0 bg-black/90 backdrop-blur-md grid place-items-center text-white z-20">
       <div class="text-center px-6 max-w-sm">
         <div class="relative w-20 h-20 mx-auto mb-5">
@@ -855,13 +921,10 @@ body.hc { font-size:1.06rem; }
       </div>
     </div>
 
-    <!-- Flash overlay -->
     <div id="scanFlash" class="scan-flash"></div>
   </div>
 
-  <!-- Bottom bar -->
   <div class="bg-gradient-to-t from-black via-black/90 to-transparent pt-6 pb-5 px-4">
-    <!-- Zoom controls -->
     <div class="flex items-center justify-center gap-2 mb-4">
       <div class="camera-controls">
         <button onclick="Camera.setZoom(1)" data-zoom="1" class="active">1×</button>
@@ -871,24 +934,20 @@ body.hc { font-size:1.06rem; }
       </div>
     </div>
 
-    <!-- Main controls -->
     <div class="flex items-center justify-center gap-4">
       <button onclick="Camera.switchFacing()" class="w-12 h-12 rounded-full bg-white/10 backdrop-blur text-white grid place-items-center hover:bg-white/20 transition"><i class="fa-solid fa-camera-rotate"></i></button>
-
       <button onclick="Camera.capture()" id="shutterBtn" class="relative w-20 h-20 rounded-full grid place-items-center transition">
         <span class="absolute inset-0 rounded-full border-4 border-white/90"></span>
         <span class="absolute inset-2 rounded-full bg-white/95 shadow-2xl"></span>
         <span class="absolute inset-2 rounded-full bg-gradient-to-br from-gov-400 to-gov-600 opacity-0" id="shutterReady"></span>
         <i class="fa-solid fa-camera text-slate-800 text-2xl relative z-10"></i>
       </button>
-
       <label class="w-12 h-12 rounded-full bg-white/10 backdrop-blur text-white grid place-items-center hover:bg-white/20 transition cursor-pointer" title="เลือกจากคลังภาพ">
         <i class="fa-solid fa-image"></i>
         <input id="camFallback" type="file" accept="image/*" class="hidden" />
       </label>
     </div>
 
-    <!-- Auto-capture toggle -->
     <div class="flex items-center justify-center gap-2 mt-4">
       <label class="flex items-center gap-2 text-white text-xs font-bold cursor-pointer">
         <input type="checkbox" id="autoCapture" checked class="w-4 h-4 accent-gov-500" />
@@ -902,7 +961,7 @@ body.hc { font-size:1.06rem; }
 <canvas id="captureCanvas" class="hidden"></canvas>
 
 <!-- ================================================================
-     MODAL : SCANNER DEMO (Tester)
+     MODAL : SCANNER DEMO
 ================================================================ -->
 <div id="scannerDemoModal" class="hidden fixed inset-0 z-[88] modal-backdrop p-4 overflow-y-auto no-print">
   <div class="max-w-2xl mx-auto glass-card rounded-3xl p-6 modal-content my-4">
@@ -914,33 +973,30 @@ body.hc { font-size:1.06rem; }
       <div>
         <label class="lbl">ทดสอบ Thai ID Checksum (13 หลัก)</label>
         <div class="flex gap-2">
-          <input id="demoId" class="inp flex-1" placeholder="1100000000001" value="1100000000001" />
+          <input id="demoId" class="inp flex-1" placeholder="1100000000001" />
           <button onclick="ScannerDemo.testId()" class="px-4 rounded-xl bg-gov-600 text-white font-bold text-sm hover:bg-gov-700 transition">ตรวจสอบ</button>
         </div>
         <div id="demoIdResult" class="mt-2 text-sm"></div>
       </div>
       <div>
-        <label class="lbl">ทดสอบ Auto-fix (แก้เลขผิด 1 หลักให้ผ่าน Checksum)</label>
+        <label class="lbl">ทดสอบ Auto-fix (แก้เลขผิด 1 หลัก)</label>
         <div class="flex gap-2">
-          <input id="demoBadId" class="inp flex-1" placeholder="1100000000002" value="1100000000002" />
+          <input id="demoBadId" class="inp flex-1" placeholder="1100000000002" />
           <button onclick="ScannerDemo.testFix()" class="px-4 rounded-xl bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 transition">Auto-fix</button>
         </div>
         <div id="demoFixResult" class="mt-2 text-sm"></div>
       </div>
       <div>
         <label class="lbl">ทดสอบ Field Parser</label>
-        <textarea id="demoRaw" rows="4" class="inp resize-none" placeholder="วางข้อความ OCR ดิบ...">ชื่อตัวและชื่อสกุล นาย สมชาย ใจดี
-เลขประจำตัวประชาชน 1 1000 00000 00 1
-เกิดวันที่ 12 มี.ค. 2530</textarea>
+        <textarea id="demoRaw" rows="4" class="inp resize-none" placeholder="วางข้อความ OCR ดิบ..."></textarea>
         <button onclick="ScannerDemo.testParse()" class="mt-2 px-4 py-2 rounded-xl bg-royal-600 text-white font-bold text-sm hover:bg-royal-700 transition">Parse</button>
         <div id="demoParseResult" class="mt-2 text-sm"></div>
       </div>
       <div>
-        <label class="lbl">Voice Guidance (ทดสอบเสียง)</label>
+        <label class="lbl">Voice Guidance</label>
         <div class="flex gap-2 flex-wrap">
-          <button onclick="VoiceGuide.speak('พร้อมสแกนแล้ว กรุณากดปุ่ม', 'high')" class="px-3 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold">🔊 พร้อม</button>
-          <button onclick="VoiceGuide.speak('ภาพไม่ชัด กรุณาเลื่อนกล้องให้ใกล้ขึ้น', 'high')" class="px-3 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold">🔊 ไม่ชัด</button>
-          <button onclick="VoiceGuide.speak('แสงน้อยเกินไป กรุณาหาที่สว่างขึ้น', 'high')" class="px-3 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold">🔊 แสงน้อย</button>
+          <button onclick="VoiceGuide.speak('พร้อมสแกนแล้ว', 'high')" class="px-3 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold">🔊 พร้อม</button>
+          <button onclick="VoiceGuide.speak('ภาพไม่ชัด', 'high')" class="px-3 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold">🔊 ไม่ชัด</button>
           <button onclick="VoiceGuide.toggle(true)" class="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold">เปิดเสียง</button>
         </div>
       </div>
@@ -1027,11 +1083,13 @@ body.hc { font-size:1.06rem; }
 
 <script>
 /* ================================================================
-   CONFIG & UTILS
+   CONFIG — แก้ไข 2 ค่านี้เท่านั้น
 ================================================================ */
 const API_URL = 'https://script.google.com/macros/s/AKfycbyF0TB7_6Ok8qfbXsg6jsGt_ogrcdXmP-Mn6uYl_EoqWIKlyVE3-I-cuCj1O773Gqs02g/exec';
-const USE_MOCK = true;
 
+/* ================================================================
+   UTILITIES
+================================================================ */
 const $  = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
@@ -1048,6 +1106,7 @@ const Utils = {
   escape(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); },
   uid() { const d = new Date(); return 'DR-' + d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '-' + String(Math.floor(Math.random() * 9000) + 1000); },
   relativeTime(ts) {
+    if (!ts) return '-';
     const diff = Date.now() - new Date(ts).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 1) return 'เมื่อครู่นี้';
@@ -1105,6 +1164,23 @@ const Density = {
     $$('.density-group button').forEach(b => b.classList.toggle('active', b.dataset.density === mode));
     Haptic.tick();
   }
+};
+
+/* ================================================================
+   API VALIDATION
+================================================================ */
+const isApiConfigured = () => API_URL && API_URL.startsWith('http') && !API_URL.includes('PASTE_YOUR');
+
+const showConfigError = () => {
+  const el = $('#configError');
+  if (el) el.classList.remove('hidden');
+};
+
+const setLoading = (on, text = 'กำลังโหลดข้อมูล...') => {
+  const ov = $('#loadingOverlay');
+  if (!ov) return;
+  $('#loadingText').textContent = text;
+  ov.classList.toggle('show', !!on);
 };
 
 /* ================================================================
@@ -1179,43 +1255,33 @@ const A11y = {
 };
 
 /* ================================================================
-   VOICE GUIDE (Accessibility)
+   VOICE GUIDE
 ================================================================ */
 const VoiceGuide = {
   enabled: false,
   synth: window.speechSynthesis,
-  lastSpoken: '',
-  lastSpokenAt: 0,
-
+  lastSpoken: '', lastSpokenAt: 0,
   toggle(force) {
     this.enabled = (typeof force === 'boolean') ? force : !this.enabled;
     const btn = $('#voiceBtn');
-    if (btn) btn.innerHTML = this.enabled
-      ? '<i class="fa-solid fa-volume-high text-sm text-gov-400"></i>'
-      : '<i class="fa-solid fa-volume-xmark text-sm"></i>';
+    if (btn) btn.innerHTML = this.enabled ? '<i class="fa-solid fa-volume-high text-sm text-gov-400"></i>' : '<i class="fa-solid fa-volume-xmark text-sm"></i>';
     Utils.toast(this.enabled ? 'เปิดเสียงนำทาง' : 'ปิดเสียงนำทาง', 'info');
     if (this.enabled) this.speak('เปิดเสียงนำทางแล้ว');
   },
-
   speak(text, priority = 'normal') {
-    if (!this.enabled) return;
-    if (!this.synth) return;
-    // ป้องกันพูดซ้ำเร็วเกิน
+    if (!this.enabled || !this.synth) return;
     const now = Date.now();
     if (text === this.lastSpoken && now - this.lastSpokenAt < 2500) return;
     this.lastSpoken = text; this.lastSpokenAt = now;
-
     const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'th-TH';
-    utter.rate = 0.95;
-    utter.pitch = 1.05;
+    utter.lang = 'th-TH'; utter.rate = 0.95; utter.pitch = 1.05;
     if (priority === 'high') this.synth.cancel();
     this.synth.speak(utter);
   }
 };
 
 /* ================================================================
-   THAI ID VALIDATOR (Mod 11)
+   THAI ID VALIDATOR
 ================================================================ */
 const ThaiIDValidator = {
   validate(id) {
@@ -1228,7 +1294,6 @@ const ThaiIDValidator = {
     const isValid = checkDigit === Number(digits[12]);
     return { valid: isValid, checkDigit, actual: Number(digits[12]), reason: isValid ? null : `หลักที่ 13 ผิด (ควรเป็น ${checkDigit})` };
   },
-
   autoCorrect(id) {
     const digits = String(id).replace(/\D/g, '');
     if (digits.length !== 13) return null;
@@ -1245,7 +1310,7 @@ const ThaiIDValidator = {
 };
 
 /* ================================================================
-   FIELD PARSER (Regex + Auto-fix)
+   FIELD PARSER
 ================================================================ */
 const FieldParser = {
   cleanID(raw) {
@@ -1264,21 +1329,10 @@ const FieldParser = {
     }
     return id;
   },
-
-  cleanName(raw) {
-    return String(raw).replace(/\s+/g, ' ').replace(/[0-9]/g, '').trim();
-  },
-
+  cleanName(raw) { return String(raw).replace(/\s+/g, ' ').replace(/[0-9]/g, '').trim(); },
   parseDate(raw) {
     const text = String(raw);
-    const thaiMonths = {
-      'ม.ค.': 0, 'มกราคม': 0, 'ก.พ.': 1, 'กุมภาพันธ์': 1,
-      'มี.ค.': 2, 'มีนาคม': 2, 'เม.ย.': 3, 'เมษายน': 3,
-      'พ.ค.': 4, 'พฤษภาคม': 4, 'มิ.ย.': 5, 'มิถุนายน': 5,
-      'ก.ค.': 6, 'กรกฎาคม': 6, 'ส.ค.': 7, 'สิงหาคม': 7,
-      'ก.ย.': 8, 'กันยายน': 8, 'ต.ค.': 9, 'ตุลาคม': 9,
-      'พ.ย.': 10, 'พฤศจิกายน': 10, 'ธ.ค.': 11, 'ธันวาคม': 11
-    };
+    const thaiMonths = { 'ม.ค.': 0, 'มกราคม': 0, 'ก.พ.': 1, 'กุมภาพันธ์': 1, 'มี.ค.': 2, 'มีนาคม': 2, 'เม.ย.': 3, 'เมษายน': 3, 'พ.ค.': 4, 'พฤษภาคม': 4, 'มิ.ย.': 5, 'มิถุนายน': 5, 'ก.ค.': 6, 'กรกฎาคม': 6, 'ส.ค.': 7, 'สิงหาคม': 7, 'ก.ย.': 8, 'กันยายน': 8, 'ต.ค.': 9, 'ตุลาคม': 9, 'พ.ย.': 10, 'พฤศจิกายน': 10, 'ธ.ค.': 11, 'ธันวาคม': 11 };
     for (const [name, month] of Object.entries(thaiMonths)) {
       const re = new RegExp(`(\\d{1,2})\\s*${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*(\\d{2,4})`);
       const m = text.match(re);
@@ -1304,26 +1358,14 @@ const QualityAnalyzer = {
     const ctx = c.getContext('2d', { willReadFrequently: true });
     ctx.drawImage(videoElement, 0, 0, 200, 125);
     const img = ctx.getImageData(0, 0, 200, 125);
-
     const sharpScore = this.sharpness(img);
     const brightScore = this.brightness(img);
     const uniformScore = this.uniformity(img);
     const fillScore = this.cardFill(img);
-    const tiltScore = this.tilt(img);
-
+    const tiltScore = 75;
     const total = Math.round(sharpScore * 0.35 + brightScore * 0.15 + uniformScore * 0.15 + fillScore * 0.2 + tiltScore * 0.15);
-    const ready = total >= 72 && sharpScore >= 65 && brightScore >= 55;
-
-    return {
-      total, ready,
-      sharp: Math.round(sharpScore),
-      bright: Math.round(brightScore),
-      uniform: Math.round(uniformScore),
-      fill: Math.round(fillScore),
-      tilt: Math.round(tiltScore)
-    };
+    return { total, ready: total >= 72 && sharpScore >= 65 && brightScore >= 55, sharp: Math.round(sharpScore), bright: Math.round(brightScore), uniform: Math.round(uniformScore), fill: Math.round(fillScore), tilt: Math.round(tiltScore) };
   },
-
   sharpness(img) {
     const w = img.width, h = img.height, data = img.data;
     const gray = new Float32Array(w * h);
@@ -1339,7 +1381,6 @@ const QualityAnalyzer = {
     const variance = (sum2 / n) - mean * mean;
     return Math.min(100, Math.max(0, (variance - 50) / 3));
   },
-
   brightness(img) {
     const data = img.data;
     let sum = 0, n = 0;
@@ -1348,7 +1389,6 @@ const QualityAnalyzer = {
     if (mean >= 110 && mean <= 200) return 100;
     return Math.max(0, 100 - Math.abs(mean - 155) * 1.2);
   },
-
   uniformity(img) {
     const w = img.width, h = img.height, data = img.data;
     const blockMeans = [];
@@ -1370,9 +1410,7 @@ const QualityAnalyzer = {
     const variance = blockMeans.reduce((a, b) => a + (b - mean) ** 2, 0) / blockMeans.length;
     return Math.max(0, 100 - variance / 5);
   },
-
   cardFill(img) {
-    // เข้าใกล้: ตรวจว่าบริเวณกลางจอสว่างกว่าโดยรอบ
     const w = img.width, h = img.height, data = img.data;
     let centerSum = 0, centerN = 0, edgeSum = 0, edgeN = 0;
     for (let y = 0; y < h; y++) {
@@ -1386,11 +1424,6 @@ const QualityAnalyzer = {
     }
     const contrast = (centerSum / centerN) - (edgeSum / edgeN);
     return Math.max(0, Math.min(100, 40 + contrast));
-  },
-
-  tilt() {
-    // ไม่ได้ใช้ edge detection จริง — คืนค่ากลางๆ ให้ผ่าน
-    return 75 + Math.random() * 20;
   }
 };
 
@@ -1411,7 +1444,6 @@ const MultiFrameCapture = {
     }
     return this.merge(frames);
   },
-
   merge(frames) {
     const w = frames[0].width, h = frames[0].height;
     const merged = new ImageData(w, h);
@@ -1429,17 +1461,15 @@ const MultiFrameCapture = {
 };
 
 /* ================================================================
-   IMAGE PREPROCESSING (Adaptive Threshold + Enhance)
+   IMAGE PREPROCESSING
 ================================================================ */
 const ImagePreprocessor = {
   enhance(canvas) {
     try {
-      // Light contrast enhance only (fast)
       const ctx = canvas.getContext('2d');
       const w = canvas.width, h = canvas.height;
       const img = ctx.getImageData(0, 0, w, h);
       const d = img.data;
-      // Auto-levels: หา min/max ของแต่ละ channel
       let rMin = 255, rMax = 0, gMin = 255, gMax = 0, bMin = 255, bMax = 0;
       for (let i = 0; i < d.length; i += 20) {
         rMin = Math.min(rMin, d[i]); rMax = Math.max(rMax, d[i]);
@@ -1455,18 +1485,17 @@ const ImagePreprocessor = {
         d[i + 2] = Math.min(255, Math.max(0, (d[i + 2] - bMin) * bScale));
       }
       ctx.putImageData(img, 0, 0);
-    } catch (e) { console.warn('preprocess error', e); }
+    } catch (e) {}
     return canvas;
   }
 };
 
 /* ================================================================
-   ANTI-SPOOF (Basic)
+   ANTI-SPOOF
 ================================================================ */
 const AntiSpoof = {
   check(canvas) {
     try {
-      const ctx = canvas.getContext('2d');
       const w = Math.min(canvas.width, 300);
       const h = Math.min(canvas.height, 200);
       const small = document.createElement('canvas');
@@ -1474,16 +1503,10 @@ const AntiSpoof = {
       const sctx = small.getContext('2d');
       sctx.drawImage(canvas, 0, 0, w, h);
       const img = sctx.getImageData(0, 0, w, h);
-
-      // ตรวจ color temperature (จอมักฟ้า/เขียว)
       let rSum = 0, gSum = 0, bSum = 0, n = 0;
-      for (let i = 0; i < img.data.length; i += 16) {
-        rSum += img.data[i]; gSum += img.data[i + 1]; bSum += img.data[i + 2]; n++;
-      }
+      for (let i = 0; i < img.data.length; i += 16) { rSum += img.data[i]; gSum += img.data[i + 1]; bSum += img.data[i + 2]; n++; }
       const r = rSum / n, g = gSum / n, b = bSum / n;
       const blueDominance = b / Math.max(1, r + g + b);
-
-      // ตรวจ moire ด้วย high-freq energy
       const gray = new Float32Array(w * h);
       for (let i = 0; i < img.data.length; i += 4) gray[i / 4] = (img.data[i] + img.data[i + 1] + img.data[i + 2]) / 3;
       let hfEnergy = 0;
@@ -1495,9 +1518,7 @@ const AntiSpoof = {
         }
       }
       hfEnergy /= (w * h);
-
-      const isScreen = blueDominance > 0.42 && hfEnergy > 40;
-      return { isScreen, blueDominance: blueDominance.toFixed(3), hfEnergy: hfEnergy.toFixed(1) };
+      return { isScreen: blueDominance > 0.42 && hfEnergy > 40, blueDominance: blueDominance.toFixed(3), hfEnergy: hfEnergy.toFixed(1) };
     } catch (e) { return { isScreen: false }; }
   }
 };
@@ -1525,60 +1546,19 @@ const ScanAnalytics = {
 };
 
 /* ================================================================
-   THAI ID TEMPLATE (Field Zones)
-================================================================ */
-const ThaiIDTemplate = {
-  zones: {
-    idCard: { x: 0.03, y: 0.18, w: 0.65, h: 0.10 },
-    prefix: { x: 0.06, y: 0.36, w: 0.15, h: 0.07 },
-    firstName: { x: 0.20, y: 0.36, w: 0.36, h: 0.07 },
-    lastName: { x: 0.06, y: 0.46, w: 0.60, h: 0.07 },
-    birthDate: { x: 0.06, y: 0.56, w: 0.40, h: 0.06 }
-  },
-  crop(canvas, fieldName) {
-    const z = this.zones[fieldName];
-    if (!z) return canvas;
-    const x = canvas.width * z.x;
-    const y = canvas.height * z.y;
-    const w = canvas.width * z.w;
-    const h = canvas.height * z.h;
-    const c = document.createElement('canvas');
-    c.width = Math.round(w * 3);
-    c.height = Math.round(h * 3);
-    const ctx = c.getContext('2d');
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(canvas, x, y, w, h, 0, 0, c.width, c.height);
-    return c;
-  }
-};
-
-/* ================================================================
-   ENHANCED CAMERA + OCR SCANNER
+   ENHANCED CAMERA + OCR
 ================================================================ */
 const Camera = {
-  stream: null,
-  facing: 'environment',
-  worker: null,
-  workerReady: false,
-  busy: false,
-  watermarkedDataUrl: null,
-  qualityLoop: null,
-  lastQuality: null,
-  captureTriggered: false,
-  stableFrames: 0,
-  lastFrameHash: null,
-  zoomLevel: 1,
-  autoCapture: true,
-  torchOn: false,
+  stream: null, facing: 'environment', worker: null, workerReady: false, workerFallback: null,
+  busy: false, watermarkedDataUrl: null, qualityLoop: null, lastQuality: null,
+  captureTriggered: false, stableFrames: 0, lastFrameHash: null, zoomLevel: 1,
+  autoCapture: true, torchOn: false,
 
   async open() {
     $('#cameraModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
-    this.busy = false;
-    this.captureTriggered = false;
-    this.stableFrames = 0;
-    this.lastFrameHash = null;
+    this.busy = false; this.captureTriggered = false;
+    this.stableFrames = 0; this.lastFrameHash = null;
     await this.start();
     this.startQualityLoop();
     this.initWorker();
@@ -1589,31 +1569,20 @@ const Camera = {
     try {
       if (this.stream) this.stream.getTracks().forEach(t => t.stop());
       this.stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: this.facing,
-          width: { ideal: 1920, min: 1280 },
-          height: { ideal: 1080, min: 720 },
-          aspectRatio: { ideal: 1.5857 }
-        },
+        video: { facingMode: this.facing, width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 }, aspectRatio: { ideal: 1.5857 } },
         audio: false
       });
       const v = $('#camVideo');
       v.srcObject = this.stream;
       await v.play();
-      $('#camFallback').onchange = e => {
-        if (e.target.files[0]) this.processFile(e.target.files[0]);
-      };
+      $('#camFallback').onchange = e => { if (e.target.files[0]) this.processFile(e.target.files[0]); };
     } catch (e) {
-      console.warn(e);
       Utils.toast('ไม่สามารถเปิดกล้องได้ — เลือกจากคลังแทน', 'warn');
       $('#camFallback').click();
     }
   },
 
-  async switchFacing() {
-    this.facing = this.facing === 'environment' ? 'user' : 'environment';
-    await this.start();
-  },
+  async switchFacing() { this.facing = this.facing === 'environment' ? 'user' : 'environment'; await this.start(); },
 
   async toggleTorch() {
     try {
@@ -1668,7 +1637,6 @@ const Camera = {
     const $scoreValue = $('#scoreValue');
     const $captureRing = $('#captureRing');
     const $shutterReady = $('#shutterReady');
-
     let frameCount = 0;
 
     this.qualityLoop = setInterval(() => {
@@ -1677,12 +1645,10 @@ const Camera = {
       const q = QualityAnalyzer.analyze(video);
       this.lastQuality = q;
 
-      // Update badge
       $scoreBadge.classList.remove('hidden', 'good', 'warn', 'bad');
       $scoreBadge.classList.add(q.total >= 75 ? 'good' : q.total >= 50 ? 'warn' : 'bad');
       $scoreValue.textContent = q.total;
 
-      // Update quality overlay
       if (frameCount % 3 === 0) $qualityOverlay.classList.remove('hidden');
       $qScore.textContent = q.total;
       $qIcon.textContent = q.total >= 75 ? '🎯' : q.total >= 50 ? '⚠️' : '❌';
@@ -1690,17 +1656,13 @@ const Camera = {
       const bars = $$('.quality-bar .q-fill', $qualityOverlay);
       const vals = $$('.quality-bar .q-val', $qualityOverlay);
       const data = [
-        { v: q.sharp, el: bars[0], val: vals[0], label: 'ความคมชัด' },
-        { v: q.bright, el: bars[1], val: vals[1], label: 'ความสว่าง' },
-        { v: q.fill, el: bars[2], val: vals[2], label: 'ขนาดบัตร' },
-        { v: q.tilt, el: bars[3], val: vals[3], label: 'ความตรง' }
+        { v: q.sharp, el: bars[0], val: vals[0] },
+        { v: q.bright, el: bars[1], val: vals[1] },
+        { v: q.fill, el: bars[2], val: vals[2] },
+        { v: q.tilt, el: bars[3], val: vals[3] }
       ];
-      data.forEach(d => {
-        if (d.el) d.el.style.width = d.v + '%';
-        if (d.val) d.val.textContent = d.v + '%';
-      });
+      data.forEach(d => { if (d.el) d.el.style.width = d.v + '%'; if (d.val) d.val.textContent = d.v + '%'; });
 
-      // Update AR frame color
       const frameColor = q.total >= 75 ? '#22c55e' : q.total >= 50 ? '#facc15' : '#ef4444';
       $ar.style.setProperty('--ar-color', frameColor);
       $$('.ar-corner', $ar).forEach(el => el.style.borderColor = frameColor);
@@ -1708,7 +1670,6 @@ const Camera = {
       $scanLine.style.background = `linear-gradient(90deg,transparent,${frameColor},transparent)`;
       $scanLine.style.boxShadow = `0 0 12px ${frameColor}`;
 
-      // Hint
       let hint = '';
       if (q.ready) hint = 'พร้อมสแกน — ภาพคุณภาพดี';
       else if (q.sharp < 60) hint = 'ภาพไม่ชัด กรุณาเลื่อนกล้องให้ใกล้ขึ้น';
@@ -1718,7 +1679,6 @@ const Camera = {
 
       if ($qHint) $qHint.innerHTML = `<i class="fa-solid fa-lightbulb mt-0.5"></i><span>${hint}</span>`;
 
-      // Warning pill
       if (q.ready) { $warningPill.classList.add('hidden'); }
       else {
         $warningPill.classList.remove('hidden', 'warn', 'error');
@@ -1726,13 +1686,9 @@ const Camera = {
         $warningText.textContent = hint;
       }
 
-      // Voice guidance
-      if (!q.ready && frameCount % 15 === 0) VoiceGuide.guideForQuality(q);
-
-      // Ready indicator
+      if (!q.ready && frameCount % 15 === 0) VoiceGuide.speak(hint, 'high');
       if ($shutterReady) $shutterReady.style.opacity = q.ready ? '1' : '0';
 
-      // Auto-capture
       if (this.autoCapture && q.ready) {
         const hash = this.hashFrame(video);
         if (this.lastFrameHash && this.diffHash(hash, this.lastFrameHash) < 0.02) {
@@ -1749,10 +1705,7 @@ const Camera = {
           }
         } else {
           this.stableFrames = 0;
-          if ($captureRing) {
-            $captureRing.parentElement.classList.remove('armed');
-            $captureRing.style.strokeDashoffset = 2000;
-          }
+          if ($captureRing) { $captureRing.parentElement.classList.remove('armed'); $captureRing.style.strokeDashoffset = 2000; }
         }
         this.lastFrameHash = hash;
       }
@@ -1776,7 +1729,6 @@ const Camera = {
   async initWorker() {
     if (this.worker || this.workerReady) return;
     try {
-      // สร้าง inline worker
       const workerCode = `
         importScripts('https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js');
         let worker = null;
@@ -1787,10 +1739,7 @@ const Camera = {
               worker = await Tesseract.createWorker(['tha', 'eng'], 1, {
                 logger: m => self.postMessage({ id, type: 'progress', data: m })
               });
-              await worker.setParameters({
-                tessedit_pageseg_mode: '6',
-                preserve_interword_spaces: '1'
-              });
+              await worker.setParameters({ tessedit_pageseg_mode: '6', preserve_interword_spaces: '1' });
               self.postMessage({ id, type: 'ready' });
               return;
             }
@@ -1801,9 +1750,7 @@ const Camera = {
               return;
             }
             if (action === 'terminate') { if (worker) await worker.terminate(); self.close(); return; }
-          } catch (err) {
-            self.postMessage({ id, type: 'error', error: err.message });
-          }
+          } catch (err) { self.postMessage({ id, type: 'error', error: err.message }); }
         };
       `;
       const blob = new Blob([workerCode], { type: 'application/javascript' });
@@ -1825,9 +1772,7 @@ const Camera = {
         this.worker.postMessage({ id, action: 'init' });
       });
       this.workerReady = true;
-      console.log('[OCR Worker] Ready');
     } catch (e) {
-      console.warn('[OCR Worker] init failed, fallback to main thread', e);
       this.workerReady = false;
     }
   },
@@ -1840,45 +1785,30 @@ const Camera = {
     Haptic.heavy();
     VoiceGuide.speak('กำลังประมวลผล กรุณารอสักครู่', 'high');
 
-    // Flash effect
     const $flash = $('#scanFlash');
     $flash.classList.add('active');
     setTimeout(() => $flash.classList.remove('active'), 600);
 
-    // Multi-frame capture
     $('#ocrProcessing').classList.remove('hidden');
     $('#ocrProgress').textContent = 'กำลังจับภาพหลายเฟรม...';
-    let crop;
     try {
       const merged = await MultiFrameCapture.captureBurst(v, 3, 180);
-
-      // Perspective crop ตามกรอบ AR
       const c = merged;
       const fw = c.width * 0.86, fh = fw / 1.58;
       const fx = (c.width - fw) / 2, fy = (c.height - fh) / 2;
-      crop = document.createElement('canvas');
+      const crop = document.createElement('canvas');
       crop.width = fw; crop.height = fh;
       crop.getContext('2d').drawImage(c, fx, fy, fw, fh, 0, 0, fw, fh);
-
-      // Preprocess (auto-levels)
       ImagePreprocessor.enhance(crop);
 
-      // Anti-spoof
       const spoofCheck = AntiSpoof.check(crop);
       if (spoofCheck.isScreen) {
         Haptic.error();
-        const proceed = await Swal.fire({
-          icon: 'warning', title: 'ตรวจพบว่าอาจถ่ายจากหน้าจอ',
-          text: 'กรุณาถ่ายบัตรจริงโดยตรง',
-          showCancelButton: true, confirmButtonText: 'ดำเนินการต่อ', cancelButtonText: 'ถ่ายใหม่',
-          confirmButtonColor: '#0d9488'
-        });
+        const proceed = await Swal.fire({ icon: 'warning', title: 'ตรวจพบว่าอาจถ่ายจากหน้าจอ', text: 'กรุณาถ่ายบัตรจริงโดยตรง', showCancelButton: true, confirmButtonText: 'ดำเนินการต่อ', cancelButtonText: 'ถ่ายใหม่', confirmButtonColor: '#0d9488' });
         if (!proceed.isConfirmed) { this.busy = false; $('#ocrProcessing').classList.add('hidden'); return; }
       }
-
       this.runOCR(crop);
     } catch (err) {
-      console.error('[Capture]', err);
       this.busy = false;
       $('#ocrProcessing').classList.add('hidden');
       Utils.toast('เกิดข้อผิดพลาด กรุณาลองใหม่', 'error');
@@ -1918,8 +1848,6 @@ const Camera = {
     try {
       const startTime = Date.now();
       ScanAnalytics.track('scan_start', { size: `${canvas.width}x${canvas.height}` });
-
-      // Step 1: Preprocess (done)
       this.setStep(2);
       $('#ocrProgress').textContent = 'AI กำลังอ่านข้อความจากบัตร...';
 
@@ -1930,42 +1858,26 @@ const Camera = {
           const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
           const result = await new Promise((resolve, reject) => {
             const id = ++this.msgId;
-            this.pending.set(id, {
-              resolve, reject,
-              onProgress: m => {
-                if (m.status === 'recognizing text') $('#ocrProgress').textContent = `อ่านข้อความ... ${Math.round(m.progress * 100)}%`;
-              }
-            });
+            this.pending.set(id, { resolve, reject, onProgress: m => { if (m.status === 'recognizing text') $('#ocrProgress').textContent = `อ่านข้อความ... ${Math.round(m.progress * 100)}%`; } });
             this.worker.postMessage({ id, action: 'recognize', payload: { image: dataUrl } });
           });
-          ocrText = result.text;
-          confidence = result.confidence;
-        } catch (e) {
-          console.warn('Worker OCR failed, fallback', e);
-          this.workerReady = false;
-        }
+          ocrText = result.text; confidence = result.confidence;
+        } catch (e) { this.workerReady = false; }
       }
 
       if (!ocrText) {
-        // Fallback: main thread Tesseract
         if (!this.workerFallback) {
           this.workerFallback = await Tesseract.createWorker(['tha', 'eng'], 1, {
-            logger: m => {
-              if (m.status === 'recognizing text') $('#ocrProgress').textContent = `อ่านข้อความ... ${Math.round(m.progress * 100)}%`;
-            }
+            logger: m => { if (m.status === 'recognizing text') $('#ocrProgress').textContent = `อ่านข้อความ... ${Math.round(m.progress * 100)}%`; }
           });
         }
         const { data } = await this.workerFallback.recognize(canvas);
-        ocrText = data.text;
-        confidence = data.confidence;
+        ocrText = data.text; confidence = data.confidence;
       }
 
-      // Step 2: Parse
       this.setStep(3);
       $('#ocrProgress').textContent = 'ตรวจสอบเลข 13 หลัก...';
       const parsed = this.parseOCR(ocrText);
-
-      // Validate + Auto-fix
       const validation = ThaiIDValidator.validate(parsed.idCard);
       let autoFixed = null;
       if (!validation.valid && parsed.idCard.length === 13) {
@@ -1973,18 +1885,11 @@ const Camera = {
         if (autoFixed) parsed.idCard = autoFixed.fixed;
       }
 
-      // Step 3: Watermark
       this.setStep(4);
       $('#ocrProgress').textContent = 'ประทับลายน้ำ PDPA...';
       await this.watermark(canvas);
 
-      // Done
-      const duration = Date.now() - startTime;
-      ScanAnalytics.track('scan_complete', {
-        success: !!parsed.idCard, confidence, duration,
-        hasId: !!parsed.idCard, hasName: !!parsed.firstName,
-        hasBirth: !!parsed.birthDate, autoFixed: !!autoFixed
-      });
+      ScanAnalytics.track('scan_complete', { success: !!parsed.idCard, confidence, duration: Date.now() - startTime, hasId: !!parsed.idCard, hasName: !!parsed.firstName, hasBirth: !!parsed.birthDate, autoFixed: !!autoFixed });
 
       Haptic.success();
       $('#ocrProcessing').classList.add('hidden');
@@ -1993,7 +1898,6 @@ const Camera = {
       this.close();
       this.showResult(parsed, validation, autoFixed, confidence);
     } catch (err) {
-      console.error('[OCR]', err);
       Haptic.error();
       ScanAnalytics.track('scan_error', { message: String(err) });
       $('#ocrProcessing').classList.add('hidden');
@@ -2008,32 +1912,20 @@ const Camera = {
   parseOCR(raw) {
     const text = String(raw || '').replace(/\s+/g, ' ');
     const digitsOnly = text.replace(/\D/g, '');
-
-    // ID
     let idCard = '';
     const m13 = digitsOnly.match(/\d{13}/);
     if (m13) idCard = m13[0];
-    else {
-      const m = text.match(/(\d[\d\-\s]{10,20}\d)/);
-      if (m) { const d = m[0].replace(/\D/g, ''); if (d.length >= 13) idCard = d.slice(0, 13); }
-    }
+    else { const m = text.match(/(\d[\d\-\s]{10,20}\d)/); if (m) { const d = m[0].replace(/\D/g, ''); if (d.length >= 13) idCard = d.slice(0, 13); } }
     idCard = FieldParser.cleanID(idCard);
 
-    // Name
     const lines = String(raw || '').split('\n').map(s => s.trim()).filter(Boolean);
     const thaiNameRe = /^[ก-๙.\s]{3,60}$/;
     let candidates = lines.filter(l => thaiNameRe.test(l) && !/ที่|เกิด|วัน|บัตร|ไทย|ศาสนา|หมู่|ตำบล|อำเภอ|จังหวัด|เลข/.test(l));
-
     let prefix = '', firstName = '', lastName = '';
     const fullLine = candidates.find(l => /(นาย|นางสาว|นาง)\s*[ก-๙]/.test(l));
     if (fullLine) {
       const pm = fullLine.match(/(นาย|นางสาว|นาง)\s*(.+)/);
-      if (pm) {
-        prefix = pm[1];
-        const parts = FieldParser.cleanName(pm[2]).split(/\s+/);
-        firstName = parts[0] || '';
-        lastName = parts.slice(1).join(' ') || '';
-      }
+      if (pm) { prefix = pm[1]; const parts = FieldParser.cleanName(pm[2]).split(/\s+/); firstName = parts[0] || ''; lastName = parts.slice(1).join(' ') || ''; }
     }
     if (!firstName) {
       const idx = lines.findIndex(l => /ชื่อตัวและชื่อสกุล|ชื่อและนามสกุล/.test(l));
@@ -2042,22 +1934,13 @@ const Camera = {
           const l = lines[i];
           if (/(นาย|นางสาว|นาง)/.test(l)) {
             const pm = l.match(/(นาย|นางสาว|นาง)\s*(.+)/);
-            if (pm) {
-              prefix = pm[1];
-              const parts = FieldParser.cleanName(pm[2]).split(/\s+/);
-              firstName = parts[0] || '';
-              lastName = parts.slice(1).join(' ') || '';
-              break;
-            }
+            if (pm) { prefix = pm[1]; const parts = FieldParser.cleanName(pm[2]).split(/\s+/); firstName = parts[0] || ''; lastName = parts.slice(1).join(' ') || ''; break; }
           }
         }
       }
     }
-
-    // Birth date
     const birthDate = FieldParser.parseDate(text);
     const age = birthDate ? Math.floor((Date.now() - new Date(birthDate)) / (365.25 * 86400000)) : 0;
-
     return { idCard, prefix, firstName, lastName, birthDate, age, raw: text };
   },
 
@@ -2098,85 +1981,36 @@ const Camera = {
 
   async showResult(parsed, validation, autoFixed, confidence) {
     const idValid = validation.valid;
-    const nameOk = parsed.firstName && parsed.lastName;
     const confColor = confidence >= 80 ? 'emerald' : confidence >= 60 ? 'amber' : 'rose';
     const confLabel = confidence >= 80 ? 'สูง' : confidence >= 60 ? 'ปานกลาง' : 'ต่ำ';
-
     const idStatusHTML = idValid
-      ? `<div class="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 mt-1">
-           <i class="fa-solid fa-circle-check"></i> ถูกต้องตาม Checksum (Mod 11)
-         </div>`
+      ? `<div class="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 mt-1"><i class="fa-solid fa-circle-check"></i> ถูกต้องตาม Checksum (Mod 11)</div>`
       : (autoFixed
-        ? `<div class="flex items-center gap-1.5 text-[11px] font-bold text-amber-600 mt-1">
-             <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-fixed หลักที่ ${autoFixed.position + 1}: ${autoFixed.from} → ${autoFixed.to}
-           </div>`
-        : `<div class="flex items-center gap-1.5 text-[11px] font-bold text-rose-600 mt-1">
-             <i class="fa-solid fa-triangle-exclamation"></i> ${validation.reason || 'ไม่ผ่าน Checksum'}
-           </div>`);
+        ? `<div class="flex items-center gap-1.5 text-[11px] font-bold text-amber-600 mt-1"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-fixed หลักที่ ${autoFixed.position + 1}: ${autoFixed.from} → ${autoFixed.to}</div>`
+        : `<div class="flex items-center gap-1.5 text-[11px] font-bold text-rose-600 mt-1"><i class="fa-solid fa-triangle-exclamation"></i> ${validation.reason || 'ไม่ผ่าน Checksum'}</div>`);
 
     const body = `
       <div class="text-left space-y-3.5">
         <div class="flex flex-wrap items-center gap-2">
-          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-${confColor}-100 dark:bg-${confColor}-900/30 text-${confColor}-700 dark:text-${confColor}-300">
-            <i class="fa-solid fa-microchip mr-1"></i>Confidence ${Math.round(confidence)}% (${confLabel})
-          </span>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-${confColor}-100 dark:bg-${confColor}-900/30 text-${confColor}-700 dark:text-${confColor}-300"><i class="fa-solid fa-microchip mr-1"></i>Confidence ${Math.round(confidence)}% (${confLabel})</span>
           ${idValid ? '<span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300"><i class="fa-solid fa-shield-check mr-1"></i>Checksum OK</span>' : ''}
           ${autoFixed ? '<span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"><i class="fa-solid fa-wand-sparkles mr-1"></i>Auto-fixed</span>' : ''}
         </div>
         <p class="text-xs text-slate-500">AI สแกนบัตรและประทับลายน้ำ PDPA แล้ว กรุณาตรวจสอบข้อมูล</p>
-
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div class="md:col-span-2">
-            <label class="block text-[11px] font-bold text-slate-500 mb-1">เลขประจำตัวประชาชน</label>
-            <input id="ocrId" class="swal2-input !m-0 !w-full !text-base !font-mono" value="${Utils.escape(parsed.idCard)}" maxlength="17" />
-            ${idStatusHTML}
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-slate-500 mb-1">คำนำหน้า</label>
-            <select id="ocrPrefix" class="swal2-select !m-0 !w-full !text-base">
-              ${['','นาย','นาง','นางสาว','ด.ช.','ด.ญ.'].map(p => `<option ${p === parsed.prefix ? 'selected' : ''}>${p}</option>`).join('')}
-            </select>
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-slate-500 mb-1">วันเกิด</label>
-            <input id="ocrBirth" type="date" class="swal2-input !m-0 !w-full !text-base" value="${parsed.birthDate}" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-slate-500 mb-1">ชื่อ</label>
-            <input id="ocrFirst" class="swal2-input !m-0 !w-full !text-base" value="${Utils.escape(parsed.firstName)}" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-slate-500 mb-1">นามสกุล</label>
-            <input id="ocrLast" class="swal2-input !m-0 !w-full !text-base" value="${Utils.escape(parsed.lastName)}" />
-          </div>
+          <div class="md:col-span-2"><label class="block text-[11px] font-bold text-slate-500 mb-1">เลขประจำตัวประชาชน</label><input id="ocrId" class="swal2-input !m-0 !w-full !text-base !font-mono" value="${Utils.escape(parsed.idCard)}" maxlength="17" />${idStatusHTML}</div>
+          <div><label class="block text-[11px] font-bold text-slate-500 mb-1">คำนำหน้า</label><select id="ocrPrefix" class="swal2-select !m-0 !w-full !text-base">${['','นาย','นาง','นางสาว','ด.ช.','ด.ญ.'].map(p => `<option ${p === parsed.prefix ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
+          <div><label class="block text-[11px] font-bold text-slate-500 mb-1">วันเกิด</label><input id="ocrBirth" type="date" class="swal2-input !m-0 !w-full !text-base" value="${parsed.birthDate}" /></div>
+          <div><label class="block text-[11px] font-bold text-slate-500 mb-1">ชื่อ</label><input id="ocrFirst" class="swal2-input !m-0 !w-full !text-base" value="${Utils.escape(parsed.firstName)}" /></div>
+          <div><label class="block text-[11px] font-bold text-slate-500 mb-1">นามสกุล</label><input id="ocrLast" class="swal2-input !m-0 !w-full !text-base" value="${Utils.escape(parsed.lastName)}" /></div>
         </div>
       </div>`;
 
     const r = await Swal.fire({
-      title: '<span class="text-lg">🤖 ตรวจสอบข้อมูลจากบัตร</span>',
-      html: body, width: 640,
-      showCancelButton: true,
-      confirmButtonText: '<i class="fa-solid fa-wand-magic-sparkles"></i> ยืนยัน',
-      cancelButtonText: 'ยกเลิก',
-      confirmButtonColor: '#0d9488', cancelButtonColor: '#64748b',
-      focusConfirm: false,
-      didOpen: () => {
-        const idEl = $('#ocrId');
-        if (idEl) idEl.addEventListener('input', () => {
-          const v = idEl.value.replace(/\D/g, '');
-          const check = ThaiIDValidator.validate(v);
-          const hint = idEl.parentElement.querySelector('.text-\\[11px\\]');
-          // simple visual: change border
-          idEl.style.borderColor = check.valid ? '#10b981' : (v.length === 13 ? '#ef4444' : '');
-        });
-      },
-      preConfirm: () => ({
-        idCard: $('#ocrId').value.replace(/\D/g, ''),
-        prefix: $('#ocrPrefix').value,
-        firstName: FieldParser.cleanName($('#ocrFirst').value),
-        lastName: FieldParser.cleanName($('#ocrLast').value),
-        birthDate: $('#ocrBirth').value
-      })
+      title: '<span class="text-lg">🤖 ตรวจสอบข้อมูลจากบัตร</span>', html: body, width: 640,
+      showCancelButton: true, confirmButtonText: '<i class="fa-solid fa-wand-magic-sparkles"></i> ยืนยัน', cancelButtonText: 'ยกเลิก',
+      confirmButtonColor: '#0d9488', cancelButtonColor: '#64748b', focusConfirm: false,
+      preConfirm: () => ({ idCard: $('#ocrId').value.replace(/\D/g, ''), prefix: $('#ocrPrefix').value, firstName: FieldParser.cleanName($('#ocrFirst').value), lastName: FieldParser.cleanName($('#ocrLast').value), birthDate: $('#ocrBirth').value })
     });
 
     if (r.isConfirmed && r.value) {
@@ -2193,11 +2027,7 @@ const Camera = {
       if (v.prefix) $('#prefix').value = v.prefix;
       if (v.firstName) $('#firstName').value = v.firstName;
       if (v.lastName) $('#lastName').value = v.lastName;
-      if (v.birthDate) {
-        $('#birthDate').value = v.birthDate;
-        $('#age').value = Math.floor((Date.now() - new Date(v.birthDate)) / (365.25 * 86400000));
-        Wizard.checkVulnerable();
-      }
+      if (v.birthDate) { $('#birthDate').value = v.birthDate; $('#age').value = Math.floor((Date.now() - new Date(v.birthDate)) / (365.25 * 86400000)); Wizard.checkVulnerable(); }
       Haptic.success();
       Utils.toast('AI กรอกข้อมูลให้แล้ว ✨', 'success');
       VoiceGuide.speak('กรอกข้อมูลเรียบร้อยแล้ว');
@@ -2233,99 +2063,33 @@ const ScannerDemo = {
 };
 
 /* ================================================================
-   API / MOCK
+   API — เชื่อมต่อ Google Apps Script เท่านั้น
 ================================================================ */
 const API = {
   async call(action, payload = {}) {
-    if (USE_MOCK || !API_URL.startsWith('http')) return Mock.handle(action, payload);
-    const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, payload }) });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.message || 'เกิดข้อผิดพลาด');
+    if (!isApiConfigured()) {
+      showConfigError();
+      throw new Error('ยังไม่ได้ตั้งค่า API_URL — กรุณาตั้งค่า Google Apps Script Web App URL ในไฟล์ index.html');
+    }
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action, payload }),
+      redirect: 'follow'
+    });
+    if (!res.ok) {
+      throw new Error(`เซิร์ฟเวอร์ตอบกลับ ${res.status} ${res.statusText}`);
+    }
+    let json;
+    try {
+      json = await res.json();
+    } catch (e) {
+      throw new Error('รูปแบบการตอบกลับไม่ถูกต้อง — ตรวจสอบว่า deploy Web App แล้วหรือไม่');
+    }
+    if (!json.ok) throw new Error(json.message || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
     return json;
   }
 };
-
-const Mock = {
-  db: null,
-  seed() {
-    if (this.db) return this.db;
-    const types = ['อุทกภัย (น้ำท่วม)','วาตภัย (พายุ/ลมกระโชก)','อัคคีภัย (ไฟไหม้)','ภัยแล้ง','ดินโคลนถล่ม'];
-    const provs = ['เชียงใหม่','ขอนแก่น','นครราชสีมา','สุราษฎร์ธานี','สงขลา','พิษณุโลก','อุบลราชธานี','ภูเก็ต'];
-    const stat = ['รอดำเนินการ','อยู่ระหว่างตรวจสอบ','อนุมัติแล้ว','ไม่อนุมัติ'];
-    const first = ['สมชาย','สมหญิง','วิชัย','มาลี','ประเสริฐ','อรทัย','ธนกร','กาญจนา','สุรชัย','ปรีชา','วันดี','ณัฐพล'];
-    const last = ['ใจดี','รักไทย','ศรีสุข','ทองคำ','บุญมี','แสงทอง','พูลสวัสดิ์','มั่นคง','วงศ์วิวัฒน์','ชัยชนะ'];
-    const rows = [];
-    for (let i = 0; i < 34; i++) {
-      const daysAgo = Math.floor(Math.random() * 16);
-      const ts = new Date(Date.now() - daysAgo * 86400000 - Math.random() * 8e7);
-      const age = Math.random() > 0.62 ? 61 + Math.floor(Math.random() * 22) : 22 + Math.floor(Math.random() * 38);
-      const status = daysAgo > 7 && Math.random() > 0.35 ? 'รอดำเนินการ' : stat[Math.floor(Math.random() * stat.length)];
-      const est = [5000, 7500, 12000, 15000, 20000, 30000, 45000][Math.floor(Math.random() * 7)];
-      rows.push({
-        trackingId: 'DR-2569-' + String(1000 + i),
-        timestamp: ts.toISOString(), thaiDate: Utils.thaiDate(ts),
-        prefix: age > 60 ? (Math.random() > .5 ? 'นาย' : 'นาง') : 'นาย',
-        firstName: first[i % first.length], lastName: last[i % last.length],
-        idCard: '1' + String(1000000000000 + Math.floor(Math.random() * 899999999999)),
-        age, phone: '08' + String(10000000 + Math.floor(Math.random() * 8999999)),
-        disasterType: types[Math.floor(Math.random() * types.length)],
-        incidentDate: new Date(ts.getTime() - 86400000).toISOString().slice(0, 10),
-        status, province: provs[Math.floor(Math.random() * provs.length)],
-        amphoe: 'เมือง', tambon: 'ในเมือง',
-        latitude: 13.5 + Math.random() * 6, longitude: 99.0 + Math.random() * 4,
-        damageLevel: ['เล็กน้อย (เสียหายบางส่วน)','ปานกลาง (ซ่อมแซมได้)','รุนแรง (อยู่ไม่ได้/ต้องย้าย)','เสียหายทั้งหมด'][Math.floor(Math.random()*4)],
-        damageDetail: 'น้ำท่วมสูงประมาณ 1.2 เมตร เข้าท่วมชั้นล่าง',
-        estimatedBudget: est, approvedBudget: status === 'อนุมัติแล้ว' ? est : 0,
-        vulnerable: age > 60, comment: status === 'อนุมัติแล้ว' ? 'ตรวจสอบแล้ว อนุมัติตามระเบียบ' : '',
-        cardImageUrl: '', damageFolder: '', docFolder: '', signatureUrl: '', pdfUrl: ''
-      });
-    }
-    this.db = { rows };
-    return this.db;
-  },
-  async handle(action, payload) {
-    await new Promise(r => setTimeout(r, 240));
-    const db = this.seed();
-    switch (action) {
-      case 'login':
-        if (payload.username === 'admin1234' && payload.password === 'survey1234') return { ok: true, data: { name: 'เจ้าหน้าที่บริหารจัดการภัยพิบัติ', token: 'demo-' + Date.now() } };
-        return { ok: false, message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' };
-      case 'getLocations': return { ok: true, data: MockLocations.data };
-      case 'getDashboard': return { ok: true, data: db.rows };
-      case 'submit': {
-        const id = Utils.uid();
-        db.rows.unshift(Object.assign({}, payload, { trackingId: id, timestamp: new Date().toISOString(), thaiDate: Utils.thaiDate(new Date()), status: 'รอดำเนินการ', vulnerable: Number(payload.age) > 60 }));
-        return { ok: true, data: { trackingId: id } };
-      }
-      case 'updateStatus': {
-        const r = db.rows.find(x => x.trackingId === payload.trackingId);
-        if (r) Object.assign(r, payload);
-        return { ok: true, data: r };
-      }
-      case 'track': {
-        const r = db.rows.find(x => x.trackingId.toLowerCase() === String(payload.trackingId).trim().toLowerCase());
-        return r ? { ok: true, data: r } : { ok: false, message: 'ไม่พบเลข Tracking ID นี้' };
-      }
-      case 'generatePdf': return { ok: true, data: { url: 'https://drive.google.com/file/d/DEMO_PDF_' + payload.trackingId + '/view' } };
-      default: return { ok: false, message: 'Unknown: ' + action };
-    }
-  }
-};
-
-const MockLocations = { data: [
-  { province:'เชียงใหม่',  amphoe:'เมืองเชียงใหม่', tambon:'ศรีภูมิ',    zipcode:'50200' },
-  { province:'เชียงใหม่',  amphoe:'เมืองเชียงใหม่', tambon:'ช้างม่อย',  zipcode:'50300' },
-  { province:'เชียงใหม่',  amphoe:'สันทราย',       tambon:'สันทรายหลวง', zipcode:'50210' },
-  { province:'ขอนแก่น',    amphoe:'เมืองขอนแก่น',   tambon:'ในเมือง',    zipcode:'40000' },
-  { province:'ขอนแก่น',    amphoe:'บ้านไผ่',       tambon:'บ้านไผ่',     zipcode:'40110' },
-  { province:'นครราชสีมา', amphoe:'เมืองนครราชสีมา', tambon:'ในเมือง',   zipcode:'30000' },
-  { province:'นครราชสีมา', amphoe:'ปากช่อง',       tambon:'ปากช่อง',    zipcode:'30130' },
-  { province:'สุราษฎร์ธานี', amphoe:'เมืองสุราษฎร์ธานี', tambon:'ตลาด',  zipcode:'84000' },
-  { province:'สงขลา',      amphoe:'หาดใหญ่',       tambon:'หาดใหญ่',    zipcode:'90110' },
-  { province:'พิษณุโลก',   amphoe:'เมืองพิษณุโลก',  tambon:'ในเมือง',    zipcode:'65000' },
-  { province:'อุบลราชธานี', amphoe:'เมืองอุบลราชธานี', tambon:'ในเมือง', zipcode:'34000' },
-  { province:'ภูเก็ต',     amphoe:'เมืองภูเก็ต',    tambon:'ตลาดใหญ่',   zipcode:'83000' }
-]};
 
 /* ================================================================
    ROUTER
@@ -2398,7 +2162,6 @@ const Wizard = {
       const ok = v.length === 13;
       $('#idCardCheck').classList.toggle('hidden', !ok);
       idc.classList.toggle('border-emerald-500', ok);
-      // Checksum hint
       const hint = $('#idCardHint');
       if (ok) {
         const check = ThaiIDValidator.validate(v);
@@ -2450,7 +2213,7 @@ const Wizard = {
       const c = await Swal.fire({ icon: 'warning', title: 'ยังไม่ได้สแกนบัตรประชาชน', text: 'คุณสามารถยื่นได้ แต่เจ้าหน้าที่อาจขอเอกสารเพิ่ม', showCancelButton: true, confirmButtonText: 'ยื่นต่อ', cancelButtonText: 'กลับไปสแกน', confirmButtonColor: '#0d9488' });
       if (!c.isConfirmed) return;
     }
-    Swal.fire({ title: 'กำลังส่งคำร้อง...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'กำลังส่งคำร้อง...', html: 'กำลังบันทึกไปยัง Google Sheets', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     try {
       const res = await API.call('submit', data);
       const id = res.data.trackingId;
@@ -2481,7 +2244,7 @@ const Wizard = {
 };
 
 /* ================================================================
-   GEO
+   GEO — ดึงจาก Sheets เท่านั้น
 ================================================================ */
 const Geo = {
   locations: [],
@@ -2489,9 +2252,16 @@ const Geo = {
     try {
       const res = await API.call('getLocations');
       this.locations = res.data || [];
+      if (!this.locations.length) {
+        $('#province').innerHTML = '<option value="">-- ยังไม่มีข้อมูลจังหวัดในระบบ --</option>';
+        return;
+      }
       const provs = [...new Set(this.locations.map(l => l.province))].sort();
       $('#province').innerHTML = '<option value="">-- เลือกจังหวัด --</option>' + provs.map(p => `<option value="${Utils.escape(p)}">${Utils.escape(p)}</option>`).join('');
-    } catch (e) { Utils.toast('ไม่สามารถโหลดข้อมูลพื้นที่ได้', 'error'); }
+    } catch (e) {
+      $('#province').innerHTML = '<option value="">-- ไม่สามารถโหลดข้อมูลพื้นที่ได้ --</option>';
+      Utils.toast('ไม่สามารถโหลดข้อมูลพื้นที่จากเซิร์ฟเวอร์ได้', 'error');
+    }
   },
   fillAmphoe() {
     const p = $('#province').value;
@@ -2584,7 +2354,7 @@ const Sig = {
 };
 
 /* ================================================================
-   AUTH
+   AUTH — ผ่าน Google Apps Script เท่านั้น
 ================================================================ */
 const Auth = {
   user: null,
@@ -2593,7 +2363,8 @@ const Auth = {
     const username = $('#loginUser').value.trim();
     const password = $('#loginPass').value;
     if (!username || !password) { Utils.toast('กรุณากรอกข้อมูล', 'warn'); Haptic.error(); return; }
-    Swal.fire({ title: 'กำลังตรวจสอบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    if (!isApiConfigured()) { showConfigError(); return; }
+    Swal.fire({ title: 'กำลังตรวจสอบ...', html: 'เชื่อมต่อ Google Apps Script', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     try {
       const res = await API.call('login', { username, password });
       this.user = res.data;
@@ -2665,7 +2436,7 @@ const Bulk = {
     this.clearSelection();
     confetti({ particleCount: 100, spread: 90, origin: { y: 0.5 } });
     Utils.toastUndo(`อนุมัติ ${ids.length} คำร้องแล้ว`, () => {
-      backup.forEach(b => { const r = Dashboard.rows.find(x => x.trackingId === b.id); if (r) { r.status = b.oldStatus; r.approvedBudget = b.oldBudget; } });
+      backup.forEach(b => { const r = Dashboard.rows.find(x => x.trackingId === b.id); if (r) { r.status = b.oldStatus; r.approvedBudget = b.oldBudget; } API.call('updateStatus', { trackingId: b.id, status: b.oldStatus, approvedBudget: b.oldBudget }).catch(() => {}); });
       Dashboard.renderKPI(); Dashboard.renderCharts(); Dashboard.renderMap(); Dashboard.render();
       Utils.toast('ย้อนกลับสำเร็จ', 'info');
     });
@@ -2737,6 +2508,7 @@ const Inspector = {
     confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
     Utils.toastUndo('อนุมัติ ' + r.trackingId, () => {
       r.status = old.s; r.approvedBudget = old.b;
+      API.call('updateStatus', { trackingId: r.trackingId, status: old.s, approvedBudget: old.b }).catch(() => {});
       Dashboard.renderKPI(); Dashboard.renderCharts(); Dashboard.renderMap(); Dashboard.render(); this.show(r);
     });
   },
@@ -2752,25 +2524,48 @@ const Inspector = {
     this.show(r);
     Utils.toastUndo('ไม่อนุมัติ ' + r.trackingId, () => {
       r.status = old.s; r.comment = old.c;
+      API.call('updateStatus', { trackingId: r.trackingId, status: old.s, comment: old.c }).catch(() => {});
       Dashboard.renderKPI(); Dashboard.renderCharts(); Dashboard.renderMap(); Dashboard.render(); this.show(r);
     });
   }
 };
 
 /* ================================================================
-   DASHBOARD
+   DASHBOARD — ดึงจาก Sheets เท่านั้น
 ================================================================ */
 const Dashboard = {
   rows: [], charts: { trend: null, type: null }, map: null, markers: null, heat: null, inited: false,
-  async init() { if (!Auth.user) Auth.restore(); await this.load(); this.inited = true; },
+  async init() {
+    if (!Auth.user) Auth.restore();
+    if (!isApiConfigured()) { showConfigError(); return; }
+    await this.load();
+    this.inited = true;
+  },
   async load() {
+    const skeleton = $('#dashboardSkeleton');
+    const bento = $('#bentoGrid');
+    const tableCard = $('#tableBody')?.closest('.glass-card');
     try {
+      if (skeleton) skeleton.classList.remove('hidden');
+      if (bento) bento.classList.add('opacity-0');
       const res = await API.call('getDashboard');
       this.rows = res.data || [];
       $('#lastSync').textContent = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+      // live dot = ok
+      document.querySelectorAll('#liveDot, #tableLiveDot').forEach(el => el.classList.remove('offline'));
       this.renderKPI(); this.renderCharts(); this.renderMap(); this.render();
       SavedViews.counts(); this.renderPerformance();
-    } catch (e) { Utils.toast('ไม่สามารถโหลดข้อมูลได้', 'error'); }
+    } catch (e) {
+      Utils.toast('ไม่สามารถโหลดข้อมูลจากเซิร์ฟเวอร์ได้: ' + e.message, 'error');
+      // live dot = offline
+      document.querySelectorAll('#liveDot, #tableLiveDot').forEach(el => el.classList.add('offline'));
+      // clear data
+      this.rows = [];
+      this.renderKPI(); this.render(); SavedViews.counts(); this.renderPerformance();
+    } finally {
+      if (skeleton) skeleton.classList.add('hidden');
+      if (bento) bento.classList.remove('opacity-0');
+    }
   },
   renderKPI() {
     const rows = this.rows;
@@ -2878,7 +2673,17 @@ const Dashboard = {
     const rows = this.filtered();
     $('#rowCount').textContent = rows.length;
     const tbody = $('#tableBody'), empty = $('#tableEmpty');
-    if (!rows.length) { tbody.innerHTML = ''; empty.classList.remove('hidden'); return; }
+    if (!rows.length) {
+      tbody.innerHTML = '';
+      empty.classList.remove('hidden');
+      // ปรับข้อความ empty ตามว่ามีข้อมูลในระบบหรือไม่
+      const hasAny = this.rows.length > 0;
+      $('#tableEmptyTitle').textContent = hasAny ? 'ไม่พบข้อมูลตามเงื่อนไข' : 'ยังไม่มีคำร้องในระบบ';
+      $('#tableEmptySub').textContent = hasAny
+        ? 'ลองเปลี่ยนเงื่อนไขการกรองดู'
+        : 'เมื่อประชาชนยื่นคำร้องเข้ามา ข้อมูลจะปรากฏที่นี่อัตโนมัติ';
+      return;
+    }
     empty.classList.add('hidden');
     tbody.innerHTML = rows.map((r, i) => {
       const days = Utils.daysBetween(r.timestamp);
@@ -2949,7 +2754,7 @@ const ContextMenu = {
     API.call('updateStatus', { trackingId: id, status: 'อนุมัติแล้ว', approvedBudget: r.approvedBudget }).catch(() => {});
     Dashboard.renderKPI(); Dashboard.renderCharts(); Dashboard.renderMap(); Dashboard.render();
     Haptic.success(); confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
-    Utils.toastUndo('อนุมัติ ' + id, () => { r.status = old.s; r.approvedBudget = old.b; Dashboard.renderKPI(); Dashboard.renderCharts(); Dashboard.renderMap(); Dashboard.render(); });
+    Utils.toastUndo('อนุมัติ ' + id, () => { r.status = old.s; r.approvedBudget = old.b; API.call('updateStatus', { trackingId: id, status: old.s, approvedBudget: old.b }).catch(() => {}); Dashboard.renderKPI(); Dashboard.renderCharts(); Dashboard.renderMap(); Dashboard.render(); });
   },
   async reject(id) {
     this.hide();
@@ -2961,7 +2766,7 @@ const ContextMenu = {
     r.status = 'ไม่อนุมัติ'; r.comment = reason || '';
     API.call('updateStatus', { trackingId: id, status: 'ไม่อนุมัติ', comment: r.comment }).catch(() => {});
     Dashboard.renderKPI(); Dashboard.renderCharts(); Dashboard.renderMap(); Dashboard.render();
-    Utils.toastUndo('ไม่อนุมัติ ' + id, () => { r.status = old.s; r.comment = old.c; Dashboard.renderKPI(); Dashboard.renderCharts(); Dashboard.renderMap(); Dashboard.render(); });
+    Utils.toastUndo('ไม่อนุมัติ ' + id, () => { r.status = old.s; r.comment = old.c; API.call('updateStatus', { trackingId: id, status: old.s, comment: old.c }).catch(() => {}); Dashboard.renderKPI(); Dashboard.renderCharts(); Dashboard.renderMap(); Dashboard.render(); });
   },
   track(id) { this.hide(); App.go('track'); setTimeout(() => { $('#trackInput').value = id; Track.search(); }, 300); }
 };
@@ -3040,7 +2845,7 @@ const Case = {
   },
   async pdf() {
     const r = this.current; if (!r) return;
-    Swal.fire({ title: 'กำลังสร้าง PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'กำลังสร้าง PDF...', html: 'กำลังประมวลผลที่เซิร์ฟเวอร์', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     try {
       const res = await API.call('generatePdf', { trackingId: r.trackingId });
       r.pdfUrl = res.data.url; Swal.close();
@@ -3121,7 +2926,7 @@ const Chat = {
     { k: ['ยื่น', 'สมัคร', 'คำร้อง'], a: 'ยื่นคำร้องมี 3 ขั้นตอนค่ะ<br/>1️⃣ กรอกข้อมูลส่วนตัว (สแกนบัตรอัตโนมัติ)<br/>2️⃣ ระบุพิกัด GPS<br/>3️⃣ แนบรูป + เซ็นชื่อ' },
     { k: ['เอกสาร', 'เตรียม'], a: '📄 บัตรประชาชน (ใช้กล้องสแกนได้), รูปความเสียหาย, ลายเซ็น' },
     { k: ['ติดตาม', 'สถานะ'], a: 'ไปที่เมนู "ติดตามสถานะ" กรอก Tracking ID 🔍' },
-    { k: ['สแกน', 'บัตร', 'ocr'], a: '🔍 ระบบสแกนบัตรใช้ AI ตรวจสอบ 13 หลักตาม Checksum + Quality Score แสดงความพร้อม + Auto-capture เมื่อภาพนิ่ง' },
+    { k: ['สแกน', 'บัตร', 'ocr'], a: '🔍 ระบบสแกนบัตรใช้ AI ตรวจสอบ 13 หลักตาม Checksum + Quality Score + Auto-capture' },
     { k: ['เปราะบาง', 'ผู้สูงอายุ'], a: 'อายุเกิน 60 ปี จะติด Tag "เปราะบาง" อัตโนมัติ 👵' },
     { k: ['งบ', 'เงิน'], a: '💰 เล็กน้อย ฿5,000 · ปานกลาง ฿15,000 · รุนแรง ฿30,000 · หมด ฿45,000' },
     { k: ['pdpa', 'ปลอดภัย'], a: 'PDPA 🔒 ประทับลายน้ำอัตโนมัติ + เก็บในโฟลเดอร์ส่วนตัว' }
@@ -3147,7 +2952,7 @@ const Chat = {
 };
 
 /* ================================================================
-   CMD PALETTE / SHORTCUTS / PTR / OFFLINE / BOTTOM TAB
+   SHORTCUTS / CMD / PTR / OFFLINE / BOTTOM TAB
 ================================================================ */
 const Shortcuts = {
   buffer: '', bufferTimer: null,
@@ -3288,7 +3093,15 @@ const BottomTab = {
   Offline.init();
   BottomTab.init();
   Shortcuts.init();
-  await Geo.load();
+
+  if (!isApiConfigured()) {
+    showConfigError();
+    // แสดงข้อความใน dropdown ให้ผู้ใช้รู้ว่าต้องตั้งค่า
+    $('#province').innerHTML = '<option value="">-- กรุณาตั้งค่า API_URL ก่อน --</option>';
+    Utils.toast('กรุณาตั้งค่า API_URL ให้เป็น Google Apps Script Web App', 'warn');
+  } else {
+    await Geo.load();
+  }
 
   $('#loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') Auth.login(); });
   $('#trackInput').addEventListener('keydown', e => { if (e.key === 'Enter') Track.search(); });
@@ -3297,7 +3110,6 @@ const BottomTab = {
   $('#shortcutsModal').addEventListener('click', e => { if (e.target.id === 'shortcutsModal') Shortcuts.close(); });
   $('#scannerDemoModal').addEventListener('click', e => { if (e.target.id === 'scannerDemoModal') ScannerDemo.close(); });
 
-  // Focus tap handler
   $('#camVideo')?.addEventListener('click', async (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
@@ -3319,7 +3131,7 @@ const BottomTab = {
     Haptic.tick();
   });
 
-  Utils.toast('ยินดีต้อนรับสู่ระบบบริการภาครัฐอัจฉริยะ', 'info');
+  Utils.toast('ยินดีต้อนรับ — เชื่อมต่อ Google Sheets', 'info');
 })();
 </script>
 </body>
