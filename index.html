@@ -16,7 +16,6 @@
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
-<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
@@ -43,10 +42,9 @@ tailwind.config = {
         modalIn: { from:{ opacity:'0', transform:'scale(0.92) translateY(20px)' }, to:{ opacity:'1', transform:'scale(1) translateY(0)' } },
         blob: { '0%,100%': { borderRadius:'60% 40% 30% 70% / 60% 30% 70% 40%' }, '50%': { borderRadius:'30% 60% 70% 40% / 50% 60% 30% 60%' } },
         gradientShift: { '0%,100%': { backgroundPosition:'0% 50%' }, '50%': { backgroundPosition:'100% 50%' } },
-        slideUp: { from:{ transform:'translateY(100%)' }, to:{ transform:'translateY(0)' } },
-        spinSlow: { to: { transform:'rotate(360deg)' } },
         flashGreen: { '0%':{ opacity:'0' }, '50%':{ opacity:'1' }, '100%':{ opacity:'0' } },
-        shake: { '0%,100%':{transform:'translateX(0)'}, '25%':{transform:'translateX(-4px)'}, '75%':{transform:'translateX(4px)'} }
+        shake: { '0%,100%':{transform:'translateX(0)'}, '25%':{transform:'translateX(-4px)'}, '75%':{transform:'translateX(4px)'} },
+        spin: { to:{ transform:'rotate(360deg)' } }
       },
       animation: {
         scanline: 'scanline 2.2s ease-in-out infinite alternate',
@@ -59,10 +57,9 @@ tailwind.config = {
         modalIn: 'modalIn .4s cubic-bezier(.34,1.56,.64,1)',
         blob: 'blob 8s ease-in-out infinite',
         gradientShift: 'gradientShift 8s ease infinite',
-        slideUp: 'slideUp .3s cubic-bezier(.34,1.56,.64,1)',
-        spinSlow: 'spinSlow 20s linear infinite',
         flashGreen: 'flashGreen .6s ease-out',
-        shake: 'shake .3s ease-in-out'
+        shake: 'shake .3s ease-in-out',
+        spin: 'spin .9s linear infinite'
       }
     }
   }
@@ -79,14 +76,13 @@ tailwind.config = {
   --grad-mesh: radial-gradient(at 20% 30%, #0d9488 0%, transparent 50%),
                radial-gradient(at 80% 70%, #3b82f6 0%, transparent 50%),
                radial-gradient(at 50% 50%, #8b5cf6 0%, transparent 50%);
-  --row-h: 60px;
 }
 .dark { --glass-bg: rgba(15, 23, 42, 0.72); --glass-border: rgba(51, 65, 85, 0.5); }
 @property --angle { syntax:'<angle>'; initial-value:0deg; inherits:false; }
 
-body[data-density="compact"]     { --row-h: 40px; font-size: 14px; }
-body[data-density="comfortable"] { --row-h: 60px; font-size: 15px; }
-body[data-density="spacious"]    { --row-h: 80px; font-size: 16px; }
+body[data-density="compact"]     { font-size: 14px; }
+body[data-density="comfortable"] { font-size: 15px; }
+body[data-density="spacious"]    { font-size: 16px; }
 body[data-density="compact"] table td, body[data-density="compact"] table th { padding-top: 6px; padding-bottom: 6px; }
 body[data-density="spacious"] table td, body[data-density="spacious"] table th { padding-top: 22px; padding-bottom: 22px; }
 
@@ -250,11 +246,6 @@ body.hc { font-size:1.06rem; }
 .timeline-dot.pending { border-color: #cbd5e1; }
 .dark .timeline-dot { background: #0f172a; }
 
-.avatar-stack { display: flex; }
-.avatar-stack .avatar { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; margin-left: -10px; background: linear-gradient(135deg, #14b8a6, #3b82f6); color: #fff; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
-.dark .avatar-stack .avatar { border-color: #0f172a; }
-.avatar-stack .avatar:first-child { margin-left: 0; }
-
 .progress-ring { transform: rotate(-90deg); }
 .progress-ring circle { transition: stroke-dashoffset .8s cubic-bezier(.34,1.56,.64,1); }
 
@@ -306,12 +297,9 @@ body.hc { font-size:1.06rem; }
 
 .mascot { display: inline-block; animation: mascotBob 2.8s ease-in-out infinite; }
 @keyframes mascotBob { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-4px) rotate(-4deg); } }
-.mascot-happy { animation: mascotHappy .6s cubic-bezier(.34,1.56,.64,1); }
-@keyframes mascotHappy { 0%,100% { transform: scale(1) rotate(0deg); } 40% { transform: scale(1.25) rotate(-12deg); } 70% { transform: scale(1.15) rotate(12deg); } }
 
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
-.quality-bar .q-fill { transition: width .15s ease-out; }
 .scan-flash { position: absolute; inset: 0; background: #22c55e; opacity: 0; pointer-events: none; }
 .scan-flash.active { animation: flashGreen .6s ease-out; }
 
@@ -339,67 +327,24 @@ body.hc { font-size:1.06rem; }
 .warning-pill.warn { background: rgba(245, 158, 11, 0.95); color: #fff; }
 .warning-pill.error { background: rgba(239, 68, 68, 0.95); color: #fff; }
 
-/* ================================================================
-   CONFIG ERROR BANNER
-================================================================ */
 #configError {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
-  max-width: 560px;
-  margin: 0 auto;
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
-  color: #fff;
-  padding: 16px 20px;
-  border-radius: 18px;
+  position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 560px; margin: 0 auto;
+  background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff;
+  padding: 16px 20px; border-radius: 18px;
   box-shadow: 0 20px 40px -12px rgba(220, 38, 38, 0.5);
-  z-index: 500;
-  animation: floatIn .4s ease-out;
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
+  z-index: 500; animation: floatIn .4s ease-out;
+  display: flex; gap: 14px; align-items: flex-start;
 }
 #configError i { font-size: 22px; margin-top: 2px; flex-shrink: 0; }
 #configError .title { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
 #configError .desc { font-size: 12px; line-height: 1.55; opacity: 0.95; }
 #configError code { background: rgba(0,0,0,.3); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-family: ui-monospace, monospace; }
-#configError button {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: rgba(255,255,255,.15);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-}
+#configError button { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,.15); color: #fff; display: grid; place-items: center; font-size: 12px; }
 #configError button:hover { background: rgba(255,255,255,.25); }
 
-/* Loading overlay for full-page fetch */
-#loadingOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(6px);
-  z-index: 400;
-  display: none;
-  align-items: center;
-  justify-content: center;
-}
+#loadingOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(6px); z-index: 400; display: none; align-items: center; justify-content: center; }
 #loadingOverlay.show { display: flex; }
-#loadingOverlay .spinner {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 5px solid rgba(255,255,255,0.25);
-  border-top-color: #14b8a6;
-  animation: spin 0.9s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+#loadingOverlay .spinner { width: 56px; height: 56px; border-radius: 50%; border: 5px solid rgba(255,255,255,0.25); border-top-color: #14b8a6; animation: spin 0.9s linear infinite; }
 
 @media print { .no-print { display: none !important; } }
 @media (prefers-reduced-motion: reduce) {
@@ -415,7 +360,6 @@ body.hc { font-size:1.06rem; }
 <div id="offlineBar" class="offline-bar"><i class="fa-solid fa-wifi mr-1"></i> คุณออฟไลน์อยู่ — ข้อมูลจะซิงค์อัตโนมัติเมื่อเชื่อมต่อ</div>
 <div aria-live="polite" aria-atomic="true" class="sr-only" id="srAnnouncer"></div>
 
-<!-- Loading overlay -->
 <div id="loadingOverlay">
   <div class="text-center text-white">
     <div class="spinner mx-auto mb-4"></div>
@@ -423,7 +367,6 @@ body.hc { font-size:1.06rem; }
   </div>
 </div>
 
-<!-- Config error banner (แสดงเมื่อยังไม่ได้ตั้งค่า API_URL) -->
 <div id="configError" class="hidden no-print">
   <i class="fa-solid fa-triangle-exclamation"></i>
   <div class="flex-1">
@@ -639,7 +582,7 @@ body.hc { font-size:1.06rem; }
       <div><h2 class="font-extrabold text-lg">ติดตามสถานะคำร้อง</h2><p class="text-xs text-slate-500 dark:text-slate-400">กรอกเลข Tracking ID ที่ได้รับ</p></div>
     </div>
     <div class="flex flex-col md:flex-row gap-3">
-      <input id="trackInput" class="inp flex-1" placeholder="เช่น DR-2569-1001" />
+      <input id="trackInput" class="inp flex-1" placeholder="เช่น DR-20260101-0001" />
       <button onclick="Track.search()" class="btn-ripple px-6 py-3 rounded-xl bg-gradient-to-br from-gov-600 to-gov-700 text-white font-bold text-sm hover:from-gov-700 hover:to-gov-800 transition shrink-0"><i class="fa-solid fa-magnifying-glass mr-1.5"></i> ค้นหา</button>
     </div>
     <div id="trackResult" class="mt-6"></div>
@@ -654,10 +597,10 @@ body.hc { font-size:1.06rem; }
       <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Executive Dashboard</p>
     </div>
     <div class="space-y-4">
-      <div><label class="lbl">ชื่อผู้ใช้</label><div class="relative"><i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i><input id="loginUser" class="inp pl-10" placeholder="admin1234" autocomplete="username" /></div></div>
+      <div><label class="lbl">ชื่อผู้ใช้</label><div class="relative"><i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i><input id="loginUser" class="inp pl-10" placeholder="ชื่อผู้ใช้" autocomplete="username" /></div></div>
       <div><label class="lbl">รหัสผ่าน</label><div class="relative"><i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i><input id="loginPass" type="password" class="inp pl-10 pr-10" placeholder="••••••••" autocomplete="current-password" /><button type="button" onclick="Auth.togglePass()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-gov-600"><i id="passEye" class="fa-solid fa-eye text-sm"></i></button></div></div>
       <button onclick="Auth.login()" class="btn-ripple w-full py-3.5 rounded-xl bg-gradient-to-br from-gov-600 to-gov-700 text-white font-extrabold hover:from-gov-700 hover:to-gov-800 shadow-lg shadow-gov-600/30 transition"><i class="fa-solid fa-right-to-bracket mr-2"></i>เข้าสู่ระบบ</button>
-      <p class="text-[11px] text-center text-slate-400">ผู้ใช้: <b>admin1234</b> / รหัสผ่าน: <b>survey1234</b></p>
+      <p class="text-[11px] text-center text-slate-400">ระบบจะตรวจสอบสิทธิ์จากเซิร์ฟเวอร์ Google Apps Script</p>
     </div>
   </div>
 </section>
@@ -710,14 +653,15 @@ body.hc { font-size:1.06rem; }
     </aside>
 
     <div class="min-w-0">
-      <!-- Skeleton (แสดงก่อนโหลดเสร็จ) -->
       <div id="dashboardSkeleton" class="hidden">
-        <div class="grid grid-cols-4 gap-3.5 mb-5">
-          <div class="col-span-2 row-span-2 skeleton h-96"></div>
-          <div class="skeleton h-44"></div>
-          <div class="skeleton h-44"></div>
-          <div class="skeleton h-44"></div>
-          <div class="skeleton h-44"></div>
+        <div class="bento mb-5">
+          <div class="bento-hero skeleton"></div>
+          <div class="bento-kpi skeleton"></div>
+          <div class="bento-kpi skeleton"></div>
+          <div class="bento-kpi skeleton"></div>
+          <div class="bento-kpi skeleton"></div>
+          <div class="bento-chart skeleton"></div>
+          <div class="bento-chart skeleton"></div>
         </div>
         <div class="skeleton h-96"></div>
       </div>
@@ -816,7 +760,7 @@ body.hc { font-size:1.06rem; }
             <i class="fa-solid fa-inbox text-6xl text-slate-300 dark:text-slate-700 block"></i>
           </div>
           <p class="text-sm font-semibold" id="tableEmptyTitle">ไม่พบข้อมูลคำร้อง</p>
-          <p class="text-xs text-slate-400 mt-1" id="tableEmptySub">ลองเปลี่ยนเงื่อนไขการกรอง หรือรอให้ประชาชนยื่นคำร้องเข้ามาใหม่</p>
+          <p class="text-xs text-slate-400 mt-1" id="tableEmptySub">ลองเปลี่ยนเงื่อนไขการกรอง</p>
         </div>
         <div class="px-4 py-3 border-t border-slate-200/70 dark:border-slate-800/70 text-xs text-slate-500 dark:text-slate-400 flex justify-between flex-wrap gap-2">
           <span>แสดง <b id="rowCount">0</b> รายการ</span>
@@ -845,9 +789,6 @@ body.hc { font-size:1.06rem; }
   <a onclick="Theme.openSwitcher()" class="tab-item"><i class="fa-solid fa-palette"></i><span>ธีม</span></a>
 </nav>
 
-<!-- ================================================================
-     MODAL : AI CAMERA (ENTERPRISE OCR SCANNER)
-================================================================ -->
 <div id="cameraModal" class="hidden fixed inset-0 z-[90] bg-black flex flex-col no-print">
   <div class="absolute top-0 left-0 right-0 p-3 flex items-center justify-between z-30 bg-gradient-to-b from-black/80 to-transparent">
     <div class="flex items-center gap-3">
@@ -855,8 +796,8 @@ body.hc { font-size:1.06rem; }
       <div class="text-white">
         <div class="font-extrabold text-sm">สแกนบัตรประชาชน</div>
         <div class="text-[10px] text-white/70 flex items-center gap-1.5">
-          <span id="camType" class="flex items-center gap-1"><i class="fa-solid fa-id-card text-gov-400"></i>บัตรประชาชนไทย</span>
-          <span id="camEngine" class="px-1.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300">Tesseract v5</span>
+          <span class="flex items-center gap-1"><i class="fa-solid fa-id-card text-gov-400"></i>บัตรประชาชนไทย</span>
+          <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300">Tesseract v5</span>
         </div>
       </div>
     </div>
@@ -960,9 +901,6 @@ body.hc { font-size:1.06rem; }
 </div>
 <canvas id="captureCanvas" class="hidden"></canvas>
 
-<!-- ================================================================
-     MODAL : SCANNER DEMO
-================================================================ -->
 <div id="scannerDemoModal" class="hidden fixed inset-0 z-[88] modal-backdrop p-4 overflow-y-auto no-print">
   <div class="max-w-2xl mx-auto glass-card rounded-3xl p-6 modal-content my-4">
     <div class="flex items-center justify-between mb-5">
@@ -973,7 +911,7 @@ body.hc { font-size:1.06rem; }
       <div>
         <label class="lbl">ทดสอบ Thai ID Checksum (13 หลัก)</label>
         <div class="flex gap-2">
-          <input id="demoId" class="inp flex-1" placeholder="1100000000001" />
+          <input id="demoId" class="inp flex-1 font-mono" placeholder="กรอกเลขบัตร 13 หลัก" />
           <button onclick="ScannerDemo.testId()" class="px-4 rounded-xl bg-gov-600 text-white font-bold text-sm hover:bg-gov-700 transition">ตรวจสอบ</button>
         </div>
         <div id="demoIdResult" class="mt-2 text-sm"></div>
@@ -981,7 +919,7 @@ body.hc { font-size:1.06rem; }
       <div>
         <label class="lbl">ทดสอบ Auto-fix (แก้เลขผิด 1 หลัก)</label>
         <div class="flex gap-2">
-          <input id="demoBadId" class="inp flex-1" placeholder="1100000000002" />
+          <input id="demoBadId" class="inp flex-1 font-mono" placeholder="กรอกเลขบัตรที่ผิด" />
           <button onclick="ScannerDemo.testFix()" class="px-4 rounded-xl bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 transition">Auto-fix</button>
         </div>
         <div id="demoFixResult" class="mt-2 text-sm"></div>
@@ -1008,9 +946,6 @@ body.hc { font-size:1.06rem; }
   </div>
 </div>
 
-<!-- ================================================================
-     CHATBOT
-================================================================ -->
 <div class="fixed bottom-24 xl:bottom-5 right-5 z-[70] no-print">
   <div id="chatPanel" class="hidden mb-3 w-[85vw] max-w-sm glass-card rounded-3xl overflow-hidden">
     <div class="bg-gradient-to-r from-gov-600 via-gov-500 to-teal-500 p-4 flex items-center gap-3 text-white">
@@ -1082,14 +1017,14 @@ body.hc { font-size:1.06rem; }
 <div id="contextMenu" class="context-menu hidden no-print"></div>
 
 <script>
-/* ================================================================
-   CONFIG — แก้ไข 2 ค่านี้เท่านั้น
-================================================================ */
+/* ============================================================================
+   CONFIG — แก้ไข 1 ค่านี้เท่านั้น
+============================================================================ */
 const API_URL = 'https://script.google.com/macros/s/AKfycbyF0TB7_6Ok8qfbXsg6jsGt_ogrcdXmP-Mn6uYl_EoqWIKlyVE3-I-cuCj1O773Gqs02g/exec';
 
-/* ================================================================
+/* ============================================================================
    UTILITIES
-================================================================ */
+============================================================================ */
 const $  = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
@@ -1104,7 +1039,6 @@ const Utils = {
   daysBetween(a, b = new Date()) { return Math.floor((b - new Date(a)) / 86400000); },
   money(n) { return '฿' + Number(n || 0).toLocaleString('th-TH'); },
   escape(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); },
-  uid() { const d = new Date(); return 'DR-' + d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '-' + String(Math.floor(Math.random() * 9000) + 1000); },
   relativeTime(ts) {
     if (!ts) return '-';
     const diff = Date.now() - new Date(ts).getTime();
@@ -1166,9 +1100,9 @@ const Density = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    API VALIDATION
-================================================================ */
+============================================================================ */
 const isApiConfigured = () => API_URL && API_URL.startsWith('http') && !API_URL.includes('PASTE_YOUR');
 
 const showConfigError = () => {
@@ -1183,9 +1117,9 @@ const setLoading = (on, text = 'กำลังโหลดข้อมูล...
   ov.classList.toggle('show', !!on);
 };
 
-/* ================================================================
+/* ============================================================================
    RIPPLE & CURSOR
-================================================================ */
+============================================================================ */
 document.addEventListener('click', e => {
   const btn = e.target.closest('.btn-ripple');
   if (!btn) return;
@@ -1211,9 +1145,9 @@ if (window.matchMedia('(hover:hover) and (pointer:fine)').matches) {
   })();
 }
 
-/* ================================================================
+/* ============================================================================
    THEME / A11Y
-================================================================ */
+============================================================================ */
 const Theme = {
   current: 'light',
   init() {
@@ -1254,9 +1188,9 @@ const A11y = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    VOICE GUIDE
-================================================================ */
+============================================================================ */
 const VoiceGuide = {
   enabled: false,
   synth: window.speechSynthesis,
@@ -1280,9 +1214,9 @@ const VoiceGuide = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    THAI ID VALIDATOR
-================================================================ */
+============================================================================ */
 const ThaiIDValidator = {
   validate(id) {
     const digits = String(id).replace(/\D/g, '');
@@ -1309,9 +1243,9 @@ const ThaiIDValidator = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    FIELD PARSER
-================================================================ */
+============================================================================ */
 const FieldParser = {
   cleanID(raw) {
     let id = String(raw).replace(/[^\d]/g, '');
@@ -1348,9 +1282,9 @@ const FieldParser = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    QUALITY ANALYZER
-================================================================ */
+============================================================================ */
 const QualityAnalyzer = {
   analyze(videoElement) {
     const c = document.createElement('canvas');
@@ -1427,9 +1361,9 @@ const QualityAnalyzer = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    MULTI-FRAME CAPTURE
-================================================================ */
+============================================================================ */
 const MultiFrameCapture = {
   async captureBurst(videoElement, count = 3, interval = 180) {
     const frames = [];
@@ -1460,9 +1394,9 @@ const MultiFrameCapture = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    IMAGE PREPROCESSING
-================================================================ */
+============================================================================ */
 const ImagePreprocessor = {
   enhance(canvas) {
     try {
@@ -1490,9 +1424,9 @@ const ImagePreprocessor = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    ANTI-SPOOF
-================================================================ */
+============================================================================ */
 const AntiSpoof = {
   check(canvas) {
     try {
@@ -1523,13 +1457,13 @@ const AntiSpoof = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    SCAN ANALYTICS
-================================================================ */
+============================================================================ */
 const ScanAnalytics = {
   events: [],
   track(event, data = {}) {
-    this.events.push({ event, data, timestamp: Date.now(), ua: navigator.userAgent.slice(0, 60) });
+    this.events.push({ event, data, timestamp: Date.now() });
     if (this.events.length > 50) this.events.shift();
   },
   render() {
@@ -1545,9 +1479,9 @@ const ScanAnalytics = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    ENHANCED CAMERA + OCR
-================================================================ */
+============================================================================ */
 const Camera = {
   stream: null, facing: 'environment', worker: null, workerReady: false, workerFallback: null,
   busy: false, watermarkedDataUrl: null, qualityLoop: null, lastQuality: null,
@@ -1653,8 +1587,8 @@ const Camera = {
       $qScore.textContent = q.total;
       $qIcon.textContent = q.total >= 75 ? '🎯' : q.total >= 50 ? '⚠️' : '❌';
 
-      const bars = $$('.quality-bar .q-fill', $qualityOverlay);
-      const vals = $$('.quality-bar .q-val', $qualityOverlay);
+      const bars = $$('.q-fill', $qualityOverlay);
+      const vals = $$('.q-val', $qualityOverlay);
       const data = [
         { v: q.sharp, el: bars[0], val: vals[0] },
         { v: q.bright, el: bars[1], val: vals[1] },
@@ -2035,9 +1969,9 @@ const Camera = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    SCANNER DEMO
-================================================================ */
+============================================================================ */
 const ScannerDemo = {
   open() { $('#scannerDemoModal').classList.remove('hidden'); ScanAnalytics.render(); },
   close() { $('#scannerDemoModal').classList.add('hidden'); },
@@ -2053,7 +1987,7 @@ const ScannerDemo = {
     const r = ThaiIDValidator.autoCorrect(id);
     const el = $('#demoFixResult');
     if (r) el.innerHTML = `<div class="text-amber-600 font-bold">🔧 Auto-fix: หลักที่ ${r.position + 1} เปลี่ยน ${r.from} → ${r.to}<br/>ผลลัพธ์: <code class="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono">${r.fixed}</code></div>`;
-    else el.innerHTML = `<div class="text-slate-500">ไม่สามารถ auto-fix ได้ (แก้เกิน 1 หลัก หรือไม่มีคำตอบ)</div>`;
+    else el.innerHTML = `<div class="text-slate-500">ไม่สามารถ auto-fix ได้</div>`;
   },
   testParse() {
     const raw = $('#demoRaw').value;
@@ -2062,9 +1996,9 @@ const ScannerDemo = {
   }
 };
 
-/* ================================================================
-   API — เชื่อมต่อ Google Apps Script เท่านั้น
-================================================================ */
+/* ============================================================================
+   API — Google Apps Script เท่านั้น
+============================================================================ */
 const API = {
   async call(action, payload = {}) {
     if (!isApiConfigured()) {
@@ -2077,23 +2011,18 @@ const API = {
       body: JSON.stringify({ action, payload }),
       redirect: 'follow'
     });
-    if (!res.ok) {
-      throw new Error(`เซิร์ฟเวอร์ตอบกลับ ${res.status} ${res.statusText}`);
-    }
+    if (!res.ok) throw new Error(`เซิร์ฟเวอร์ตอบกลับ ${res.status} ${res.statusText}`);
     let json;
-    try {
-      json = await res.json();
-    } catch (e) {
-      throw new Error('รูปแบบการตอบกลับไม่ถูกต้อง — ตรวจสอบว่า deploy Web App แล้วหรือไม่');
-    }
+    try { json = await res.json(); }
+    catch (e) { throw new Error('รูปแบบการตอบกลับไม่ถูกต้อง — ตรวจสอบว่า deploy Web App แล้วหรือไม่'); }
     if (!json.ok) throw new Error(json.message || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
     return json;
   }
 };
 
-/* ================================================================
+/* ============================================================================
    ROUTER
-================================================================ */
+============================================================================ */
 const App = {
   go(view) {
     $$('.view').forEach(v => v.classList.add('hidden'));
@@ -2109,9 +2038,9 @@ const App = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    WIZARD
-================================================================ */
+============================================================================ */
 const Wizard = {
   step: 1, total: 3,
   init() { this.bindInputs(); this.render(); },
@@ -2243,9 +2172,9 @@ const Wizard = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    GEO — ดึงจาก Sheets เท่านั้น
-================================================================ */
+============================================================================ */
 const Geo = {
   locations: [],
   async load() {
@@ -2297,9 +2226,9 @@ const Geo = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    ESTIMATOR / UPLOADER / SIG
-================================================================ */
+============================================================================ */
 const Estimator = {
   estimate() {
     const lvl = $('#damageLevel').value || '';
@@ -2353,9 +2282,9 @@ const Sig = {
   toDataURL() { return (!this.pad || this.pad.isEmpty()) ? '' : this.pad.toDataURL('image/png'); }
 };
 
-/* ================================================================
+/* ============================================================================
    AUTH — ผ่าน Google Apps Script เท่านั้น
-================================================================ */
+============================================================================ */
 const Auth = {
   user: null,
   togglePass() { const el = $('#loginPass'); const isPwd = el.type === 'password'; el.type = isPwd ? 'text' : 'password'; $('#passEye').className = isPwd ? 'fa-solid fa-eye-slash text-sm' : 'fa-solid fa-eye text-sm'; },
@@ -2379,9 +2308,9 @@ const Auth = {
   restore() { const s = sessionStorage.getItem('egov_user'); if (s) { try { this.user = JSON.parse(s); $('#adminName').textContent = this.user.name; } catch (e) {} } }
 };
 
-/* ================================================================
+/* ============================================================================
    SAVED VIEWS / BULK / INSPECTOR
-================================================================ */
+============================================================================ */
 const SavedViews = {
   active: 'all',
   apply(view) {
@@ -2530,9 +2459,9 @@ const Inspector = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    DASHBOARD — ดึงจาก Sheets เท่านั้น
-================================================================ */
+============================================================================ */
 const Dashboard = {
   rows: [], charts: { trend: null, type: null }, map: null, markers: null, heat: null, inited: false,
   async init() {
@@ -2544,22 +2473,18 @@ const Dashboard = {
   async load() {
     const skeleton = $('#dashboardSkeleton');
     const bento = $('#bentoGrid');
-    const tableCard = $('#tableBody')?.closest('.glass-card');
     try {
       if (skeleton) skeleton.classList.remove('hidden');
       if (bento) bento.classList.add('opacity-0');
       const res = await API.call('getDashboard');
       this.rows = res.data || [];
       $('#lastSync').textContent = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-      // live dot = ok
       document.querySelectorAll('#liveDot, #tableLiveDot').forEach(el => el.classList.remove('offline'));
       this.renderKPI(); this.renderCharts(); this.renderMap(); this.render();
       SavedViews.counts(); this.renderPerformance();
     } catch (e) {
       Utils.toast('ไม่สามารถโหลดข้อมูลจากเซิร์ฟเวอร์ได้: ' + e.message, 'error');
-      // live dot = offline
       document.querySelectorAll('#liveDot, #tableLiveDot').forEach(el => el.classList.add('offline'));
-      // clear data
       this.rows = [];
       this.renderKPI(); this.render(); SavedViews.counts(); this.renderPerformance();
     } finally {
@@ -2590,7 +2515,7 @@ const Dashboard = {
   },
   countUp(sel, target, prefix = '') {
     const el = $(sel); if (!el) return;
-    let cur = 0; const duration = 1400; const start = performance.now();
+    const duration = 1400; const start = performance.now();
     const easeOutExpo = t => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
     const tick = (now) => { const p = Math.min((now - start) / duration, 1); el.textContent = prefix + Math.floor(target * easeOutExpo(p)).toLocaleString('th-TH'); if (p < 1) requestAnimationFrame(tick); };
     requestAnimationFrame(tick);
@@ -2676,12 +2601,9 @@ const Dashboard = {
     if (!rows.length) {
       tbody.innerHTML = '';
       empty.classList.remove('hidden');
-      // ปรับข้อความ empty ตามว่ามีข้อมูลในระบบหรือไม่
       const hasAny = this.rows.length > 0;
       $('#tableEmptyTitle').textContent = hasAny ? 'ไม่พบข้อมูลตามเงื่อนไข' : 'ยังไม่มีคำร้องในระบบ';
-      $('#tableEmptySub').textContent = hasAny
-        ? 'ลองเปลี่ยนเงื่อนไขการกรองดู'
-        : 'เมื่อประชาชนยื่นคำร้องเข้ามา ข้อมูลจะปรากฏที่นี่อัตโนมัติ';
+      $('#tableEmptySub').textContent = hasAny ? 'ลองเปลี่ยนเงื่อนไขการกรองดู' : 'เมื่อประชาชนยื่นคำร้องเข้ามา ข้อมูลจะปรากฏที่นี่อัตโนมัติ';
       return;
     }
     empty.classList.add('hidden');
@@ -2722,9 +2644,9 @@ const Dashboard = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    CONTEXT MENU
-================================================================ */
+============================================================================ */
 const ContextMenu = {
   el: null,
   init() { this.el = $('#contextMenu'); document.addEventListener('click', e => { if (!this.el.contains(e.target)) this.el.classList.add('hidden'); }); },
@@ -2771,9 +2693,9 @@ const ContextMenu = {
   track(id) { this.hide(); App.go('track'); setTimeout(() => { $('#trackInput').value = id; Track.search(); }, 300); }
 };
 
-/* ================================================================
+/* ============================================================================
    CASE
-================================================================ */
+============================================================================ */
 const Case = {
   current: null,
   open(trackingId) {
@@ -2854,9 +2776,9 @@ const Case = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    EXPORT / TRACK / CHAT
-================================================================ */
+============================================================================ */
 const Export = {
   csv() {
     const rows = Dashboard.filtered();
@@ -2951,9 +2873,9 @@ const Chat = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    SHORTCUTS / CMD / PTR / OFFLINE / BOTTOM TAB
-================================================================ */
+============================================================================ */
 const Shortcuts = {
   buffer: '', bufferTimer: null,
   init() {
@@ -3077,9 +2999,9 @@ const BottomTab = {
   }
 };
 
-/* ================================================================
+/* ============================================================================
    BOOT
-================================================================ */
+============================================================================ */
 (async function boot() {
   Theme.init();
   A11y.init();
@@ -3096,7 +3018,6 @@ const BottomTab = {
 
   if (!isApiConfigured()) {
     showConfigError();
-    // แสดงข้อความใน dropdown ให้ผู้ใช้รู้ว่าต้องตั้งค่า
     $('#province').innerHTML = '<option value="">-- กรุณาตั้งค่า API_URL ก่อน --</option>';
     Utils.toast('กรุณาตั้งค่า API_URL ให้เป็น Google Apps Script Web App', 'warn');
   } else {
@@ -3131,7 +3052,7 @@ const BottomTab = {
     Haptic.tick();
   });
 
-  Utils.toast('ยินดีต้อนรับ — เชื่อมต่อ Google Sheets', 'info');
+  Utils.toast('ยินดีต้อนรับ — ระบบพร้อมใช้งาน', 'info');
 })();
 </script>
 </body>
