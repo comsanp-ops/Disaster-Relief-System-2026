@@ -44,7 +44,8 @@ tailwind.config = {
         gradientShift: { '0%,100%': { backgroundPosition:'0% 50%' }, '50%': { backgroundPosition:'100% 50%' } },
         flashGreen: { '0%':{ opacity:'0' }, '50%':{ opacity:'1' }, '100%':{ opacity:'0' } },
         shake: { '0%,100%':{transform:'translateX(0)'}, '25%':{transform:'translateX(-4px)'}, '75%':{transform:'translateX(4px)'} },
-        spin: { to:{ transform:'rotate(360deg)' } }
+        spin: { to:{ transform:'rotate(360deg)' } },
+        configIn: { from:{ opacity:'0', transform:'translateY(30px) scale(0.96)' }, to:{ opacity:'1', transform:'translateY(0) scale(1)' } }
       },
       animation: {
         scanline: 'scanline 2.2s ease-in-out infinite alternate',
@@ -59,7 +60,8 @@ tailwind.config = {
         gradientShift: 'gradientShift 8s ease infinite',
         flashGreen: 'flashGreen .6s ease-out',
         shake: 'shake .3s ease-in-out',
-        spin: 'spin .9s linear infinite'
+        spin: 'spin .9s linear infinite',
+        configIn: 'configIn .5s cubic-bezier(.34,1.56,.64,1)'
       }
     }
   }
@@ -327,20 +329,127 @@ body.hc { font-size:1.06rem; }
 .warning-pill.warn { background: rgba(245, 158, 11, 0.95); color: #fff; }
 .warning-pill.error { background: rgba(239, 68, 68, 0.95); color: #fff; }
 
+/* ================================================================
+   CONFIG ERROR BANNER — Premium Redesign
+================================================================ */
 #configError {
-  position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 560px; margin: 0 auto;
-  background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff;
-  padding: 16px 20px; border-radius: 18px;
-  box-shadow: 0 20px 40px -12px rgba(220, 38, 38, 0.5);
-  z-index: 500; animation: floatIn .4s ease-out;
-  display: flex; gap: 14px; align-items: flex-start;
+  position: fixed;
+  inset: auto 20px 20px 20px;
+  max-width: 620px;
+  margin: 0 auto;
+  background: linear-gradient(150deg, #ffffff 0%, #fef2f2 100%);
+  border: 2px solid #fecaca;
+  border-radius: 22px;
+  padding: 22px 24px;
+  box-shadow: 0 24px 60px -18px rgba(220, 38, 38, 0.35), 0 0 0 1px rgba(220, 38, 38, 0.08);
+  z-index: 500;
+  display: flex;
+  gap: 16px;
+  animation: configIn .5s cubic-bezier(.34,1.56,.64,1);
+  font-family: 'Sarabun', sans-serif;
 }
-#configError i { font-size: 22px; margin-top: 2px; flex-shrink: 0; }
-#configError .title { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
-#configError .desc { font-size: 12px; line-height: 1.55; opacity: 0.95; }
-#configError code { background: rgba(0,0,0,.3); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-family: ui-monospace, monospace; }
-#configError button { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,.15); color: #fff; display: grid; place-items: center; font-size: 12px; }
-#configError button:hover { background: rgba(255,255,255,.25); }
+.dark #configError {
+  background: linear-gradient(150deg, #1a0b0b 0%, #2a0e0e 100%);
+  border-color: #7f1d1d;
+  box-shadow: 0 24px 60px -18px rgba(220, 38, 38, 0.45), 0 0 0 1px rgba(220, 38, 38, 0.2);
+}
+@keyframes configIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+#configError .ce-icon {
+  flex-shrink: 0; width: 48px; height: 48px; border-radius: 14px;
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  color: #fff; display: grid; place-items: center; font-size: 22px;
+  box-shadow: 0 8px 20px -6px rgba(220, 38, 38, 0.5);
+}
+#configError .ce-content { flex: 1; min-width: 0; }
+#configError .ce-title {
+  font-size: 16px; font-weight: 800; color: #b91c1c;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+}
+.dark #configError .ce-title { color: #fca5a5; }
+#configError .ce-sub { font-size: 12.5px; color: #7f1d1d; line-height: 1.55; margin-bottom: 14px; }
+.dark #configError .ce-sub { color: #fecaca; }
+#configError .ce-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+#configError .ce-step { display: flex; gap: 10px; align-items: flex-start; }
+#configError .ce-num {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+  background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff;
+  font-size: 11px; font-weight: 800; display: grid; place-items: center;
+  margin-top: 2px; box-shadow: 0 3px 8px -2px rgba(220, 38, 38, 0.4);
+}
+#configError .ce-step-body { flex: 1; min-width: 0; font-size: 12.5px; color: #7f1d1d; line-height: 1.55; }
+.dark #configError .ce-step-body { color: #fecaca; }
+#configError .ce-step-body b { font-weight: 800; color: #b91c1c; }
+.dark #configError .ce-step-body b { color: #fca5a5; }
+#configError .ce-code {
+  position: relative; background: rgba(127, 29, 29, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.2); border-radius: 8px;
+  padding: 8px 32px 8px 10px; margin-top: 6px; overflow: hidden;
+}
+.dark #configError .ce-code { background: rgba(0, 0, 0, 0.35); border-color: rgba(220, 38, 38, 0.3); }
+#configError .ce-code code {
+  display: block; font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 10.5px; color: #b91c1c; background: transparent; padding: 0;
+  word-break: break-all; line-height: 1.4;
+}
+.dark #configError .ce-code code { color: #fca5a5; }
+#configError .ce-code button {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  width: 22px; height: 22px; border-radius: 6px;
+  background: rgba(220, 38, 38, 0.15); color: #b91c1c;
+  display: grid; place-items: center; font-size: 10px; transition: all .2s;
+}
+#configError .ce-code button:hover { background: rgba(220, 38, 38, 0.28); transform: translateY(-50%) scale(1.08); }
+#configError .ce-code button.copied { background: #10b981; color: #fff; }
+#configError .ce-hint { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #991b1b; margin-top: 4px; opacity: 0.85; }
+.dark #configError .ce-hint { color: #fca5a5; }
+#configError .ce-hint i { color: #f59e0b; font-size: 10px; }
+#configError .ce-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+#configError .ce-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 800;
+  text-decoration: none; transition: all .2s; border: none; cursor: pointer; font-family: inherit;
+}
+#configError .ce-btn-primary {
+  background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff;
+  box-shadow: 0 6px 16px -4px rgba(220, 38, 38, 0.5);
+}
+#configError .ce-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 20px -4px rgba(220, 38, 38, 0.6); }
+#configError .ce-btn-secondary {
+  background: rgba(220, 38, 38, 0.1); color: #b91c1c;
+  border: 1.5px solid rgba(220, 38, 38, 0.25);
+}
+.dark #configError .ce-btn-secondary {
+  color: #fca5a5; border-color: rgba(220, 38, 38, 0.4);
+  background: rgba(220, 38, 38, 0.15);
+}
+#configError .ce-btn-secondary:hover { background: rgba(220, 38, 38, 0.18); }
+#configError .ce-footer {
+  display: flex; align-items: center; gap: 6px;
+  padding-top: 10px; border-top: 1px dashed rgba(220, 38, 38, 0.2);
+  font-size: 11px; color: #991b1b; opacity: 0.85;
+}
+.dark #configError .ce-footer { color: #fca5a5; border-top-color: rgba(220, 38, 38, 0.3); }
+#configError .ce-footer i { color: #10b981; }
+#configError .ce-close {
+  position: absolute; top: 12px; right: 12px; width: 28px; height: 28px;
+  border-radius: 50%; background: rgba(220, 38, 38, 0.1); color: #b91c1c;
+  display: grid; place-items: center; font-size: 12px;
+  transition: all .2s; border: none; cursor: pointer;
+}
+#configError .ce-close:hover { background: rgba(220, 38, 38, 0.25); transform: rotate(90deg); }
+.dark #configError .ce-close { color: #fca5a5; background: rgba(220, 38, 38, 0.2); }
+@media (max-width: 480px) {
+  #configError { inset: auto 10px 10px 10px; padding: 16px; border-radius: 18px; gap: 12px; }
+  #configError .ce-icon { width: 40px; height: 40px; font-size: 18px; }
+  #configError .ce-title { font-size: 14px; }
+  #configError .ce-sub { font-size: 11.5px; }
+  #configError .ce-step-body { font-size: 11.5px; }
+  #configError .ce-actions { flex-direction: column; }
+  #configError .ce-btn { width: 100%; justify-content: center; }
+}
 
 #loadingOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(6px); z-index: 400; display: none; align-items: center; justify-content: center; }
 #loadingOverlay.show { display: flex; }
@@ -367,17 +476,76 @@ body.hc { font-size:1.06rem; }
   </div>
 </div>
 
+<!-- ============================================================
+     CONFIG ERROR BANNER (ไม่ตั้งค่า API_URL)
+================================================================ -->
 <div id="configError" class="hidden no-print">
-  <i class="fa-solid fa-triangle-exclamation"></i>
-  <div class="flex-1">
-    <div class="title">ยังไม่ได้ตั้งค่า Backend API</div>
-    <div class="desc">
-      กรุณาตั้งค่า <code>API_URL</code> ในไฟล์ <code>index.html</code> ให้เป็น URL ของ Google Apps Script Web App
-      ที่ deploy แล้ว (Deploy → New deployment → Web app → Execute as: Me / Access: Anyone)
-      <br/>จากนั้นรัน <code>setupDatabase()</code> ใน Code.gs เพื่อสร้างชีต
+  <div class="ce-icon">
+    <i class="fa-solid fa-plug-circle-exclamation"></i>
+  </div>
+  <div class="ce-content">
+    <div class="ce-title">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      ยังไม่ได้เชื่อมต่อ Backend
+    </div>
+    <div class="ce-sub">
+      ระบบต้องเชื่อมต่อกับ <b>Google Apps Script</b> เพื่อดึงข้อมูลจาก Google Sheets
+    </div>
+
+    <div class="ce-steps">
+      <div class="ce-step">
+        <span class="ce-num">1</span>
+        <div class="ce-step-body">
+          <span>เปิดไฟล์ <code>index.html</code> ค้นหาบรรทัดนี้</span>
+          <div class="ce-code">
+            <code id="ceCodeSnippet">const API_URL = 'PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';</code>
+            <button onclick="ConfigError.copySnippet(event)" title="คัดลอก">
+              <i class="fa-solid fa-copy"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ce-step">
+        <span class="ce-num">2</span>
+        <div class="ce-step-body">
+          <span>นำ <b>Web App URL</b> จาก Google Apps Script มาวางแทนที่</span>
+          <div class="ce-hint">
+            <i class="fa-solid fa-lightbulb"></i>
+            หาได้จาก <b>Deploy → Manage deployments → Web app URL</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="ce-step">
+        <span class="ce-num">3</span>
+        <div class="ce-step-body">
+          <span>กด <b>Deploy</b> ใน Apps Script แล้วรีเฟรชหน้านี้</span>
+          <div class="ce-hint">
+            <i class="fa-solid fa-user-shield"></i>
+            ตั้งค่า: <b>Execute as: Me</b> · <b>Who has access: Anyone</b>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ce-actions">
+      <a href="https://script.google.com" target="_blank" rel="noopener" class="ce-btn ce-btn-primary">
+        <i class="fa-solid fa-up-right-from-square"></i>
+        เปิด Google Apps Script
+      </a>
+      <button onclick="ConfigError.showHelp()" class="ce-btn ce-btn-secondary">
+        <i class="fa-solid fa-circle-question"></i>
+        ดูวิธีติดตั้งทั้งหมด
+      </button>
+    </div>
+
+    <div class="ce-footer">
+      <i class="fa-solid fa-shield-halved"></i>
+      ข้อมูลทั้งหมดจะถูกเก็บใน Google Sheets ของหน่วยงานคุณเท่านั้น
     </div>
   </div>
-  <button onclick="document.getElementById('configError').classList.add('hidden')" aria-label="ปิด">
+  <button onclick="ConfigError.dismiss()" class="ce-close" aria-label="ปิด">
     <i class="fa-solid fa-xmark"></i>
   </button>
 </div>
@@ -1101,13 +1269,122 @@ const Density = {
 };
 
 /* ============================================================================
-   API VALIDATION
+   API VALIDATION & CONFIG ERROR
 ============================================================================ */
 const isApiConfigured = () => API_URL && API_URL.startsWith('http') && !API_URL.includes('PASTE_YOUR');
 
 const showConfigError = () => {
   const el = $('#configError');
-  if (el) el.classList.remove('hidden');
+  if (!el) return;
+  // ถ้าผู้ใช้ปิดไปแล้วใน session นี้ → ไม่แสดงอีก
+  if (sessionStorage.getItem('egov_config_error_dismissed') === '1') return;
+  el.classList.remove('hidden');
+};
+
+const ConfigError = {
+  dismiss() {
+    const el = $('#configError');
+    if (!el) return;
+    el.style.transition = 'opacity .3s, transform .3s';
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px) scale(0.95)';
+    setTimeout(() => el.classList.add('hidden'), 300);
+    sessionStorage.setItem('egov_config_error_dismissed', '1');
+  },
+
+  async copySnippet(evt) {
+    try {
+      const text = "const API_URL = 'YOUR_GAS_WEB_APP_URL_HERE';";
+      await navigator.clipboard.writeText(text);
+      const btn = (evt && evt.currentTarget) || event.currentTarget;
+      const original = btn.innerHTML;
+      btn.classList.add('copied');
+      btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = original;
+      }, 1800);
+      Utils.toast('คัดลอกแล้ว', 'success');
+    } catch (e) {
+      Utils.toast('ไม่สามารถคัดลอกได้', 'warn');
+    }
+  },
+
+  showHelp() {
+    Swal.fire({
+      title: '<span class="text-lg font-extrabold">วิธีติดตั้งระบบ</span>',
+      html: `
+        <div class="text-left space-y-4 text-sm">
+          <div class="bg-gradient-to-r from-rose-50 to-red-50 dark:from-rose-900/20 dark:to-red-900/20 border border-rose-200 dark:border-rose-800 rounded-2xl p-4">
+            <p class="text-xs font-bold text-rose-700 dark:text-rose-300 mb-1">
+              <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+              ปัญหาปัจจุบัน
+            </p>
+            <p class="text-[12px] text-rose-600 dark:text-rose-400 leading-relaxed">
+              ยังไม่ได้ตั้งค่า <code class="bg-white/60 dark:bg-black/30 px-1 rounded">API_URL</code>
+              ทำให้ระบบไม่สามารถดึงข้อมูลจาก Google Sheets ได้
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex gap-3">
+              <span class="shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-gov-500 to-gov-700 text-white grid place-items-center font-bold text-xs">1</span>
+              <div>
+                <p class="font-extrabold text-slate-800 dark:text-slate-200">Deploy Code.gs เป็น Web App</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  เปิด <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">script.google.com</code>
+                  → วาง Code.gs → Run <b>setupDatabase()</b> หนึ่งครั้ง
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <span class="shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-gov-500 to-gov-700 text-white grid place-items-center font-bold text-xs">2</span>
+              <div>
+                <p class="font-extrabold text-slate-800 dark:text-slate-200">Deploy → New deployment → Web app</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  ตั้งค่า <b>Execute as: Me</b> · <b>Who has access: Anyone</b>
+                  แล้วคัดลอก <b>Web App URL</b>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <span class="shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-gov-500 to-gov-700 text-white grid place-items-center font-bold text-xs">3</span>
+              <div>
+                <p class="font-extrabold text-slate-800 dark:text-slate-200">วาง URL ใน index.html</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  เปิด <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">index.html</code>
+                  → แก้บรรทัด <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">const API_URL = '...'</code>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <span class="shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white grid place-items-center font-bold text-xs">
+                <i class="fa-solid fa-check text-[10px]"></i>
+              </span>
+              <div>
+                <p class="font-extrabold text-emerald-600 dark:text-emerald-400">รีเฟรชหน้านี้ — เสร็จแล้ว!</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  ระบบจะดึงข้อมูลจาก Google Sheets จริงทันที
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>`,
+      width: 620,
+      confirmButtonText: '<i class="fa-solid fa-thumbs-up mr-1"></i>เข้าใจแล้ว',
+      confirmButtonColor: '#0d9488',
+      showCancelButton: true,
+      cancelButtonText: 'เปิด Apps Script',
+      cancelButtonColor: '#dc2626'
+    }).then(r => {
+      if (r.dismiss === Swal.DismissReason.cancel) {
+        window.open('https://script.google.com', '_blank');
+      }
+    });
+  }
 };
 
 const setLoading = (on, text = 'กำลังโหลดข้อมูล...') => {
